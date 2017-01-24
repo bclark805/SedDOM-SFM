@@ -1,0 +1,183 @@
+
+
+
+                                  Sediment-water column linkages and sediment depths and volumes
+
+
+ ACTIVE LAYER DEPTH    0.100 CM
+
+ NO STEADY-STATE VALUES OF G3 COMPUTED
+
+
+
+
+
+                                 S E D I M E N T   I N I T I A L   C O N D I T I O N S
+
+
+
+                         Sediment initial conditions for Sediment Temperature
+
+                     0.0000E+00
+
+
+                         Sediment initial conditions for Sediment POP        
+                                     G1                      G2                      G3
+
+                     0.0000E+00   0.0000E+00   0.0000E+00
+
+
+                         Sediment initial conditions for Sediment PON        
+                                     G1                      G2                      G3
+
+                     0.0000E+00   0.0000E+00   0.0000E+00
+
+
+                         Sediment initial conditions for Sediment POC        
+                                     G1                      G2                      G3
+
+                     0.0000E+00   0.0000E+00   0.0000E+00
+
+
+                         Sediment initial conditions for Sediment PBS        
+                                     G1                      G2                      G3
+
+                     0.0000E+00
+
+
+                         Sediment initial conditions for Sediment PO4        
+
+                     0.0000E+00
+
+
+                         Sediment initial conditions for Sediment NH4        
+
+                     0.0000E+00
+
+
+                         Sediment initial conditions for Sediment NO3        
+
+                     0.0000E+00
+
+
+                         Sediment initial conditions for Sediment HS         
+
+                     0.0000E+00
+
+
+                         Sediment initial conditions for Sediment CH4        
+
+                     0.0000E+00
+
+
+                         Sediment initial conditions for Sediment CH4        
+
+                     0.0000E+00
+
+
+                         Sediment initial conditions for Sediment DSIL       
+
+                     0.0000E+00
+
+
+                         Sediment initial conditions for Benthic Stress      
+
+                     0.0000E+00
+
+
+                              Temperature diffusion coefficient  0.100E+04 cm**2/sec
+
+
+                               If salinity <      1.000 ppt, methane formed
+                               If salinity <      1.000 ppt, high nit/denit used
+
+
+                              Particulate organic matter G-model splits
+          fraction of....     recycled to     G1     G2     G3
+      Group 1 algal phosphorus              1.00   2.00   3.00
+      Group 2 algal phosphorus              2.00   3.00   4.00
+      Group 3 algal phosphorus              3.00   4.00   5.00
+      Group 1 algal nitrogen                4.00   5.00   6.00
+      Group 2 algal nitrogen                5.00   6.00   7.00
+      Group 3 algal nitrogen                6.00   7.00   8.00
+      Group 1 algal carbon                  7.00   8.00   9.00
+      Group 2 algal carbon                  8.00   9.00  10.00
+      Group 3 algal carbon                  9.00  10.00  11.00
+
+
+                               G2 - G3 splits for Refractory Particulates
+  NODE   FRG2P   FRG3P   FRG2N   FRG3N   FRG2C   FRG3C
+    1   0.250   0.250   0.250   0.400   0.200   0.100
+
+
+                              Diagenesis rates (1/day) | Temp corr factor
+                              Phosphorus
+                                       G1  0.000E+00       0.000
+                                       G2  0.000E+00      -0.011
+                                       G3  0.000E+00       0.020
+                              Nitrogen
+                                       G1  0.000E+00       0.000
+                                       G2  0.000E+00      -0.011
+                                       G3  0.000E+00       0.020
+                              Carbon
+                                       G1  0.000E+00       0.000
+                                       G2  0.000E+00      -0.011
+                                       G3  0.000E+00       0.021
+                              Silica
+                                           0.100E-03       0.000
+
+
+                                   Additional constants
+                              M1........    0.00 kg/L
+                              M2........    1.00 kg/L
+                              THTADP....   2.064
+                              THTADD....  -3.011
+                              KAPPNH4F..   1.000 m/day
+                              KAPPNH4S..   2.000 m/day
+                              PIENH4....   3.064 L/kg
+                              THTANH4...  -4.011
+                              KMNH4.....   5.000 mg n/m**3
+                              KMNH4O2...   6.020 mg o2/L
+                              KAPPNO3F..   1.000 m/day
+                              KAPPNO3S..   2.000 m/day
+                              K2NO3.....   3.064 /day
+                              THTANO3...  -4.011
+                              KAPP1HSD....   1.000 m/day
+                              KAPP1HSP....   2.000 m/day
+                              PIE1HS......   3.064 L/kg
+                              PIE2HS......  -4.011 L/kg
+                              THTAH2S...   5.000
+                              KMHSO2....   6.020 mg o2/L
+                              CSISATT20..     1.0 mg si/m**3
+                              DPIE1SI....   2.000 L/kg
+                              PIE2SI....   3.064 L/kg
+                              KMPSI.....-.40E+04 mg si/m**3
+                              O2CRITSI..0.10E-03 mg O2/L
+                              JSIDETR...0.20E-03 mg Si/m2-d
+                              DPIE1PO4F..   1.000 l/kg
+                              DPIE1PO4S..   2.000 l/kg
+                              PIE2PO4..   3.064 l/kg
+                              O2CRITPO4.  -4.011 mg o2/l
+                              KMO2DP....   5.000 mg o2/l
+                              TEMPBEN...   0.000 deg c
+                              KBENSTR...   0.000 /day
+                              KLBNTH....   0.000---
+                              DPMIN.....  -0.011 m2/d
+                              KAPPCH4...  10.000 m/day
+                              THTACH4...  20.000
+
+
+   NODE      WSSNET    WSLNET    WSRNET    WS1NET    WS2NET    WS3NET    WSUNET
+      1     0.250     0.250     0.250     0.400     0.200     0.100     0.250
+
+
+                               Sedimentation (burial) rates (cm/yr)
+              1  0.00
+
+
+                              Sediment solid-phase mixing rates (m**2/day)
+              1  0.00
+
+
+                              Sediment dissolved-phase mixing rates (m**2/day)
+              1  0.00
