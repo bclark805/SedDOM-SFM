@@ -399,9 +399,10 @@ read(*,*)OLW_DOM
 		CALL SED_DOM_SHARE_ALLOCATE	
 		CALL SED_DOM_INPUT ! Added by B Clark for testing sediment DOM with 
 
+    SED_DOM_FLAG = SED_DOM
 	    write(*,*)'Seddom Flag = ',SED_DOM_FLAG
 	  
-    IF(SED_DOM_FLAG) THEN
+   ! IF(SED_DOM_FLAG) THEN
 	  
 	    !CALL SED_DOM_ALLOCATE_VARS
 		!CALL SED_DOM_SHARE_ALLOCATE
@@ -434,8 +435,8 @@ read(*,*)OLW_DOM
 		!WC_NCDOP2 = 0.01
 		!WC_NCDOP3 = 0.01
 		
-		SED_DOM_FLAG = SED_DOM	
-	ENDIF
+!		SED_DOM_FLAG = SED_DOM	
+!	ENDIF
 	!
 	!allocate sav module variables
 	!
