@@ -1,0 +1,56 @@
+This directory contains the Source code, input files and post-processing script 
+
+for the SedDOM-SFM model (Clark et al., 2017).  To run the model:
+
+1. Go into the source directory and alter the makefile to have the appropriate directories for each dependency
+    
+to build the executable file type
+
+make
+
+2.  Specify the file you want to run for the overlying water column chemical constituents in sedtest_2c.inp
+
+	PNPT ---> Point No Point
+	RGPT ---> Ragged Point
+	R64  ---> R-64
+
+	the files with the string "fluxDO" on the end use the Fluxzilla 
+	dissolved oxygen data rather than the Chesapeake bay Program Dissolved oxygen data
+
+
+3.  switch back to the home directory and run the executable by typing
+
+source/test_sed_dom
+
+this will run the executable and produce outputs in the outputs directory
+
+
+4.  specify the file used to force the Overlying Water Column DOM
+
+	LE22_DOM.dat ---> Ragged Point (Potomac River)
+	CB52_DOM.dat ---> Point No Point (Main Stem CBay)
+	CB43_DOM.dat ---> R-64 (Main Stem CBay)
+
+
+5.  Run plot_seddomSFM_compare in matlab to plot the results vs observations 
+
+
+make sure the matlab script knows where all the appropriate directories are
+
+
+Additional information:
+
+- All the DOM parameters are read from the input file seddom_control.in
+- All other parameters are specified in the actually main program source code file test_sed_withDOM.F
+
+
+
+The developers of this model are not responsible for any undesired outcomes produced by this model.
+
+SedDOM-SFM is intended for research purposes only.  Use at your own risk
+
+ 
+Contact Blake Clark for any specific questions
+
+
+bclark@umces.edu
