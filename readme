@@ -43,23 +43,17 @@ this will run the executable and produce outputs in the outputs directory
 
 5.  Run plot_seddomSFM_compare in matlab to plot the results vs observations 
 
-
 make sure the matlab script knows where all the appropriate directories are
-
 
 Additional information:
 
 - All the DOM parameters are read from the input file seddom_control.in
-- All other parameters are specified in the actually main program source code file test_sed_withDOM.F
-
-
+- All other parameters are specified in the main program source code file test_sed_withDOM.F
 
 The developers of this model are not responsible for any undesired outcomes produced by this model.
 
 SedDOM-SFM is intended for research purposes only.  Use at your own risk
-
  
 Contact Blake Clark for any specific questions
-
 
 bclark@umces.edu
