@@ -144,7 +144,7 @@
 
 MAIN  = mod_prec.F	mod_types.F	mod_utils.F	mod_control.F	\
 	mod_lims.F	mod_bcs.F	mod_sizes.F	mod_hydrovars.F	\
-	mod_buffers.F 	mod_fileinfo.F	wqm_inputs.F       \
+	mod_buffers.F 	mod_fileinfo.F	       \
 	mod_wqm.F	mod_zoop.F	mod_wqminit.F\
 	utilities.F	mod_par.F	mod_sed_sav_exchange_vars.F	\
 	bracket.F	mod_sed_sf_exchange_vars.F	mod_sf.F	\
