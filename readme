@@ -1,14 +1,20 @@
 This directory contains the Source code, input files and post-processing script 
 
-for the SedDOM-SFM model (Clark et al., 2017).  To run the model:
+for the SedDOM-SFM model (Clark et al., 2017).  
 
 We would like to acknowledge Dominic DiToro, Carl Cerco and James Fitzpatrick for the original model development.
 See DiToro's website at: http://www.ce.udel.edu/faculty/ditoro/sedimentfluxmodeling.html 
 
 You can also see a current PNNL project using coupled sediment-water column modeling in the Salish Sea, Pacific Northwest of North America.
-
 http://salish-sea.pnnl.gov/
 
+Validation data in the form of a matlab structure, fluxzilla.mat, was collected by the GONZO research group from Chesapeake Biological 
+Laboratory in Solomons Island, MD, headed by Dr. Walter Boynton.  Wothout there efforts to collect and compile this comprehensive
+sediment flux database, this modeling effort would be severely limited.
+
+visit their website at http://www.gonzo.cbl.umces.edu/
+
+===================================================================
 
 To run the model
 1. Go into the source directory and alter the makefile to have the appropriate directories for each dependency
