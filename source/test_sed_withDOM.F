@@ -1252,7 +1252,9 @@ read(*,*)OLW_DOM
     !do test 2a calculations
 	
 	TMSTRT = 0.0		!reference time
-	TMEND  = 4599. ! B CLark changed for CBAY R-64  !1459.75		!end time
+	WRITE(*,*)'How long is the time series being used to force the model, in days?'
+    READ(*,*)TMEND
+!	TMEND  = 4599. ! B CLark changed for CBAY R-64  !1459.75		!end time
 	JDAY   = 0.0		!time in days 
 	DLT    = 0.25*86400 !10.0		!time step in sec = 864sec=0.01 day=14.4min
 	ELTMS  = 0.0		!time in sec

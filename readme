@@ -46,6 +46,12 @@ this will run the executable and produce outputs in the outputs directory
 	CB52_DOM.dat ---> Point No Point (Main Stem CBay)
 	CB43_DOM.dat ---> R-64 (Main Stem CBay)
 
+5.  specify how long the model run will bay, based on the forcing data available
+
+	LE22 (Ragged Point) ----> 4148 days
+	CB52 and CB43 (Point no Point and R-64) ------> 4599 days
+
+
 
 5.  Run plot_seddomSFM_compare in matlab to plot the results vs observations 
 
