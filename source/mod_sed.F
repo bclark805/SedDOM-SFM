@@ -653,6 +653,28 @@ USE MOD_HYDROVARS, ONLY:   &
 #if defined(SEDIMENT_DOM)		  
     USE MOD_SED_DOM, ONLY: SED_DOM, MARSH_SEDIMENTS, &! SEDIMENT DOM AND MARSH SEDIMENTS FLAG	
 							SED_DOM_CALC,   HYDRO_FLAG
+
+   USE MOD_SED_DOM_EXCHANGE, ONLY:     &
+	    JDOCX_SHARE1, &
+		JDOCX_SHARE2, &
+	    JDONX_SHARE1, &
+	    JDONX_SHARE2, &
+	    JDOPX_SHARE, &
+		SED_TEMP_SHARE,   &
+		ZSED_SHARE,   &
+		W2_SHARE,   &
+		DLTS_SHARE, &
+		FX_POC1TM1,  &   !  AdFded by B Clark Nov 2015 for hydrolysis
+		FX_POC2TM1,   &
+		FX_POC3TM1,  &
+		FX_PON1TM1,  &
+		FX_PON2TM1,   &
+		FX_PON3TM1,    &	
+		FX_POP1TM1,  &
+		FX_POP2TM1,   &
+		FX_POP3TM1, &
+		SED_DOM_FLAG, & S_SHARE, KL12_SHARE
+
 #endif   
     IMPLICIT NONE
     SAVE
@@ -1028,6 +1050,7 @@ USE MOD_HYDROVARS, ONLY:   &
                     
 
   REAL(SP) ::         JNX,           & !depth integrated PON diagenesis rate (mgN/m^2/day)
+					JNX_Layer1,           & !depth integrated PON diagenesis rate (mgN/m^2/day) in layer 1 from DON  B Clark APril 2017
                     JCX,           & !depth integrated POC diagenesis rate (mgC/m^2/day)
                     JPX              !depth integrated POP diagenesis rate (mgP/m^2/day)
 
@@ -2140,12 +2163,6 @@ END SUBROUTINE SED_ALLOC
         POC2TM1S_SED_DF    ,              &
         M1_SED_DF,                        &
         M2_SED_DF
-		
-   !USE MOD_SED_DOM_EXCHANGE, ONLY:     &
-!	    JDOCX_SHARE, &
-!	    JDONX_SHARE, &
-!	    JDOPX_SHARE
-	   
 
 #  if defined (MULTIPROCESSOR)
         USE MOD_PAR, ONLY:   &      
@@ -3608,29 +3625,7 @@ SUBROUTINE SED_INIT2
    
    USE MOD_SED_DF_EXCHANGE_VARS, ONLY: &
         POC1TM1S_SED_DF,                 &
-        POC2TM1S_SED_DF
-#if defined(SEDIMENT_DOM)		
-   USE MOD_SED_DOM_EXCHANGE, ONLY:     &
-	    JDOCX_SHARE, &
-	    JDONX_SHARE, &
-	    JDOPX_SHARE, &
-		SED_TEMP_SHARE,   &
-		ZSED_SHARE,   &
-		W2_SHARE,   &
-		DLTS_SHARE, &
-		FX_POC1TM1,  &   !  AdFded by B Clark Nov 2015 for hydrolysis
-		FX_POC2TM1,   &
-		FX_POC3TM1,  &
-		FX_PON1TM1,  &
-		FX_PON2TM1,   &
-		FX_PON3TM1,    &	
-		FX_POP1TM1,  &
-		FX_POP2TM1,   &
-		FX_POP3TM1, &
-		SED_DOM_FLAG
-#endif		
-		
-		
+        POC2TM1S_SED_DF	
         
    USE MOD_SAV, ONLY:  NSAVCELL,        & 
                         SAVCELL,         &
@@ -4046,14 +4041,11 @@ IF(HYDRO_FLAG) THEN  ! Added by B Clark for hydrolysis of POC --> DOC  Nov 2015
 	 FX_POP2TM1(I)= XKPOP2*POP2TM1S(I)/1000
 	 FX_POP3TM1(I)= XKPOP3*POP3TM1S(I)/1000
 	 
-	 
-	 
-	 
-
-	 END DO
+   END DO
 	 
 END IF  
 
+  ! Diffusion rate for application the DOM solver for layer m/d ---> 1/d
    IF(SED_DOM_FLAG) THEN
       
       CALL SED_DOM_CALC   ! B CLARK SED_DOM UPDATE
@@ -4334,7 +4326,8 @@ END IF
      KL12NOM  = DDP/(H2/2)*GET_ZL12NOM(TEMPD)   !normalized porewater diffusion rate across layer1,2 (m/day)
                                                 !We see new DDP is half of old DDP to keep KL12NOM the same
                                                 !DMD(13.6)
-         
+	 KL12_SHARE=KL12NOM
+   !   S_SHARE = KL12NOM   
          !
          !POC1R = 100,000 mgC/m^3 ~= 0.1 mgC/gSediment if M2 =1kg/L 
          !***Note it is based on M2, not M1 ****
@@ -4722,15 +4715,24 @@ END IF
      !JCX = XKPOC1*POC1+XKPOC2*POC2+XKPOC3*POC3    !WLong notes (2-7)               (m/d * mgC/m^3  ==> mgC/m^2/day)
      !JNX = XKPON1*PON1+XKPON2*PON2+XKPON3*PON3    !WLong notes (2-8)'s JN term (mgN/m^2/day)
      !JPX = XKPOP1*POP1+XKPOP2*POP2+XKPOP3*POP3  !WLong notes (2-9)'s JP term (mgP/m^2/day) 
-	 
+
+
 #if defined(SEDIMENT_DOM)	 
 IF(HYDRO_FLAG .AND. SED_DOM) THEN
 
     ! write(*,*)'JDOC = ',JDOCX_SHARE(I) 
-	  JCX=JDOCX_SHARE(I)*1000    ! B Clark convert from g/m^2/day to mg/m^2/day
-	  JNX=JDONX_SHARE(I)*1000
+	  JCX=JDOCX_SHARE2(I)*1000    ! B Clark convert from g/m^2/day to mg/m^2/day
+	  JNX=JDONX_SHARE2(I)*1000
 	  JPX=JDOPX_SHARE(I)*1000
- 
+						  
+	! Layer 1 input of DON remineralization to Layer 1 NH4 					  
+     JNX_LAYER1 =  JDONX_SHARE1(I)*HSED1(I)*1000  ! g N m^-3 d * depth of layer 1 (m) * 1000 mg g^-1
+		
+	write(*,*)'JCX before layer 1',JCX									 
+										 ! ----> mg N m^-2 d^-1     
+	  JCX = JCX+JDOCX_SHARE1(I)*HSED1(I)*1000
+									  
+	 write(*,*)'JCX after layer 1',JCX
 ELSE
 #endif
      JCX = XKPOC1*POC1+XKPOC2*POC2+XKPOC3*POC3    !WLong notes (2-7)               (m/d * mgC/m^3  ==> mgC/m^2/day)
@@ -4741,13 +4743,19 @@ ELSE
 #if defined(SEDIMENT_DOM)	 
 	IF(SED_DOM)THEN  ! B Clark Sediment DOM addition
 	  
-	  JCX=JCX+JDOCX_SHARE(I)*1000    ! B Clark convert from g/m^2/day to mg/m^2/day
-	  JNX=JNX+JDONX_SHARE(I)*1000
+	  JCX=JCX+JDOCX_SHARE2(I)*1000    ! B Clark convert from g/m^2/day to mg/m^2/day
+	  JNX=JNX+JDONX_SHARE2(I)*1000
 	  JPX=JPX+JDOPX_SHARE(I)*1000
 !	write(*,*)'JCX in 2  = ',JCX  
+						  
+	! Layer 1 input of DON remineralization to Layer 1 NH4 					  
+     JNX_LAYER1 =  JDONX_SHARE1(I)*HSED1(I)*1000  ! g N m^-3 d * depth of layer 1 (m) * 1000 mg g^-1
+											 ! ----> mg N m^-2 d^-1     
+	  JCX = JCX+JDOCX_SHARE1(I)*HSED1(I)*1000
 	ENDIF
 	
 ENDIF
+
 #endif
 
         IDEBUG_SED=IDEBUG_SED+1
@@ -5283,7 +5291,9 @@ ENDIF
      !calculate layer 1 thickness (m)
      HSED1(I)=KL12*H2/S                    !Estimated thickness of layer 1 (H1) (Di Toro Appendix B) Book page 576
                                             ![m/d ]* [m] /[m/d] ==> [m]
-          
+     
+!	 write(*,*)' S before DOM = ',S  ! B CLARK S_SHARE GETS PASSED TO THE MOD_SED_DOM 
+	 S_SHARE = S/HSED1(I)     
      !IDEBUG=161
      !IF(MSR)THEN
      
@@ -5674,6 +5684,7 @@ ENDIF
    !IF(MSR)write(*,*)'LBnote d: CPOC_GL(38,2)=',CPOC_GL(38,2), '  CPOC(38,2)=',CPOC(38,2)
    
    RETURN
+   
    END SUBROUTINE SED_DIAGENESIS_G3
 
 
@@ -5714,6 +5725,7 @@ ENDIF
                           
    SAVE    
    LOGICAL  ::  TF_SSTATE
+   INTEGER :: I
    REAL(SP) ::     SOD1,             &    !guessed SOD (gO2/m^2/day)
                 DF_SOD_TMP,     &    !SOD due to deposption feeder
                 SAV_SOD_TMP,    &    !SOD due to SAV root respiration
@@ -5769,6 +5781,17 @@ ENDIF
    ENDIF
    
    J1   = S*NH40                                !(m/d) * (mgN/m^3) ==> mgN/m^2/day WLong (4-6) 
+   
+ #if defined(SEDIMENT_DOM) 
+   ! Potentially at in NH4 flux from DON remineralization in layer 1
+   write(*,*)' J1 before = ',J1
+   
+   J1 = J1 + JNX_LAYER1
+   
+   write(*,*)' J1 after = ',J1
+   
+ #endif  
+   
    K3   = 0.                                    !WLong (4-8)
    J2   = JNX                                    !WLong (4-9)
    PIE1 = PIENH4
@@ -5797,6 +5820,8 @@ ENDIF
    IF(TF_SSTATE)THEN !for steady state make sure NH41TM1=NH41 just calculated
       NH41TM1=NH41      !WLong: this is important for steady state
    ENDIF
+   
+   write(*,*)'S before NH4 = ',S
    
    JNH4 = S*(NH41-NH40)            !(m/d)*(mgN/m^3) ==> mgN/m^2/d
    
@@ -6114,7 +6139,8 @@ ENDIF
 
    RETURN
    END FUNCTION SEDF
-   
+  
+  
    
 !********************************************************************************
 !**                        F U N C T I O N   Z B R E N T                       **
@@ -6449,6 +6475,7 @@ ENDIF
    ENDIF
    
    XK1 = XK0+K1H1D*FD1+K1H1P*FP1
+   
    XK2 = K2H2D*FD2+K2H2P*FP2
    
   !Excel
@@ -6464,7 +6491,7 @@ ENDIF
   
    A11 = -F12-XK1-W2                    !eqn(3-32)
    A21 = F12+W2                            !eqn(3-35)
-   A12 = F21                            !eqn(3-33)
+   A12 = F21                            !eqn(3-33) 
    B_1 = -J1                            !eqn(3-34)
    
    IF(STEADYSTATE)THEN
@@ -7747,7 +7774,7 @@ ENDIF
         JSIN_R1 =   JSIN_R2
         O20_R1    =    O20_R2        
         D_R1    =    D_R2        
-        TW_R1    =    TW_R2 !+ 4.5 ! B Clark increase temperature       
+        TW_R1    =    TW_R2 ! + 4.5 ! B Clark increase temperature       
         NH30_R1    =    NH30_R2        
         NO30_R1    =    NO30_R2        
         PO40_R1    =    PO40_R2        
@@ -7798,7 +7825,7 @@ D_R2 = 1.0
       
 	  JCIN_R2 = JCIN_R2!0.04*12*2.667 !JCIN_R2*2   ! B Clark use a constant flux
 								! 40 mmol/m^2/day (Brady et al., 2013) * 12 mg C/ mmol C *2.667 mg O2/ mg C
-      JNIN_R2 = JNIN_R2 !0.04*12/6.25!JNIN_R2*2  !  &!N OM flux
+      JNIN_R2 = JNIN_R2*7.3/6.625!0.04*12/6.625!JNIN_R2*2  !  &!N OM flux
       JPIN_R2 = JPIN_R2!0.04*12/41!JPIN_R2*2  !  &!P OM flux
       JSIN_R2 = JSIN_R2!0.04*12/45.3!JSIN_R2*2    !&!Si OM flux
 	  

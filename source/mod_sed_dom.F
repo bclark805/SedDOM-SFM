@@ -22,7 +22,7 @@ USE MOD_SED_DOM_EXCHANGE, ONLY: DLTS_SHARE,  &
 								 JWNCDOP1,      &
 								 JWNCDOP2,      &
 								 JWNCDOP3,  &
-								 PERCOLATION_FLAG
+								 PERCOLATION_FLAG, & S_SHARE, KL12_SHARE
 								 
 USE WC_DOM, ONLY: WC_CDOC1,WC_CDOC2,WC_CDOC3, &
 					  WC_NCDOC1,WC_NCDOC2,WC_NCDOC3, &
@@ -127,7 +127,7 @@ REAL(SP)      :: SEDPERC_COEFF =  1.143,  &  ! SEdiment percolation coefficnet, 
                   SEDPERC_INT = -0.478!,&     ! intercept of linear relationship between density and velocity
 				  
 				  
-REAL(SP) :: TEMP_ABSC = 0.05, TEMP_ABSN =0.05			! add in a temporary irreversible absorption sink for testing purposes
+REAL(SP) :: TEMP_ABSC = 0.0, TEMP_ABSN =0.0			! add in a temporary irreversible absorption sink for testing purposes
 
 
 				   ! above is from Bradley and Morris 1990 MEPS
@@ -146,7 +146,8 @@ REAL(SP) :: TEMP_ABSC = 0.05, TEMP_ABSN =0.05			! add in a temporary irreversibl
                   
 REAL(SP)	  :: DD,DD_Z  ! THE MIXING VELOCITY (m/day) and depth integrated diffusion rate (1/day)
 
-REAL(SP)	  :: ALPHA    ! the reaction coefficients for the sediment DOM solver, 1/day
+REAL(SP)	  :: ALPHA1, ALPHA2    ! the reaction coefficients for the sediment DOM solver for layer 1 and layer 2
+									!, 1/day
 
 
 REAL(SP)                   ::       NCDOCFRAC ,             &    !fraction of MDOM to NCDOM  These should add up to 1 for conservation
@@ -237,21 +238,37 @@ REAL(SP) 	                         ::	JMDOM      	             !marsh plant dom 
 REAL(SP),   DIMENSION(:),  ALLOCATABLE  ::	JNCMDOC,	        &   !Non-colored marsh DOM flux (gC/m^2/day)
 											JCMDOC   	           !colored marsh DOM flux	(gC/m^2/day)
 
-
+!Anaerobic Layer Carbon
 REAL(SP)     		   ::   CDOC1TM1 ,               & ! colored [DOC1] at time t-dt  ( gC/m^3)   
                                 CDOC2TM1 , 		& ! colored [DOC2] at time t-dt  (gC/m^3)
                                 CDOC3TM1 , 		& ! colored [DOC3] at time t-dt
                                 NCDOC1TM1 ,		& ! non colored [DOC1] at time t-dt
                                 NCDOC2TM1 ,		& ! non colored [DOC2] at time t-dt
                                 NCDOC3TM1	          ! non colored [DOC3] at time t-dt		
+
+!Aerobic Layer Carbon
+REAL(SP)     		   ::   CDOC11TM1 ,               & ! colored [DOC1]  at time t-dt  ( gC/m^3)   
+                                CDOC21TM1 , 		& ! colored [DOC2] at time t-dt  (gC/m^3)
+                                CDOC31TM1 , 		& ! colored [DOC3] at time t-dt
+                                NCDOC11TM1 ,		& ! non colored [DOC1] at time t-dt
+                                NCDOC21TM1 ,		& ! non colored [DOC2] at time t-dt
+                                NCDOC31TM1	          ! non colored [DOC3] at time t-dt		
                                         
-                               
+!Anaerobic layer Nitrogen                               
 REAL(SP)                   ::   CDON1TM1 ,		& ! colored [DON1] at time t-dt   (g N/m^3)
                                 CDON2TM1 ,		& ! colored [DON2] at time t-dt
                                 CDON3TM1 ,		& ! colored [DON3] at time t-dt
                                 NCDON1TM1 ,		& ! non colored [DON1] at time t-dt
                                 NCDON2TM1 ,		& ! non colored [DON2] at time t-dt
                                 NCDON3TM1 		  ! non colored [DON3] at time t-dt
+								
+!Aerobic layer Nitrogen                               
+REAL(SP)                   ::   CDON11TM1 ,		& ! colored [DON1] at time t-dt   (g N/m^3)
+                                CDON21TM1 ,		& ! colored [DON2] at time t-dt
+                                CDON31TM1 ,		& ! colored [DON3] at time t-dt
+                                NCDON11TM1 ,		& ! non colored [DON1] at time t-dt
+                                NCDON21TM1 ,		& ! non colored [DON2] at time t-dt
+                                NCDON31TM1 		  ! non colored [DON3] at time t-dt
                                         
                                
 REAL(SP)                   ::   CDOP1TM1 , 		& ! colored [DOP1] at time t-dt (g P/m^3)
@@ -271,7 +288,31 @@ REAL(SP)                   ::   XKDOC1,			& !temperature adjusted decay rate (1/
 				XKDOP2,			&
 				XKDOP3
 
+!Aerobic layer inputs from overlying water column, plants etc
+REAL(SP)		::   JinCDOC11,	        & ! New CDOC1 input  (g C/m^3)
+				JinCDOC21,		& ! New	CDOC2 input  (g C/m^3)
+				JinCDOC31,		& ! New CDOC3 input  (g C/m^3)
+				JinNCDOC11,		& ! NEW NCDOC1 input (g C/m^3)
+				JinNCDOC21,		& ! New NCDOC2 input (g C/m^3)
+				JinNCDOC31		  ! New NCDOC3 input (g C/m^3)
 
+REAL(SP)		   ::	JinCDON11,		& ! New CDON1 input  (g N/m^3)
+				JinCDON21,		& ! New CDON2 input  (g N/m^3) 
+				JinCDON31,		& ! New CDON3 input  (g N/m^3)
+				JinNCDON11,		& ! NEW NCDON1 input (g N/m^3)
+				JinNCDON21,		& ! New NCDON2 input (g N/m^3)
+				JinNCDON31		  ! New NCDON3 input (g N/m^3)
+
+REAL(SP)		   ::	JinCDOP11,		& ! New CDOP1 input  (g N/m^3)
+				JinCDOP21,		& ! New CDOP2 input  (g N/m^3) 
+				JinCDOP31,		& ! New CDOP3 input  (g N/m^3)
+				JinNCDOP11,		& ! NEW NCDOP1 input (g N/m^3)
+				JinNCDOP21,		& ! New NCDOP2 input (g N/m^3)
+				JinNCDOP31		  ! New NCDOP3 input (g N/m^3)				
+				
+				
+				
+!! Anaerobic Layer INputs from plants, etc				
 REAL(SP)		   ::   JinCDOC1,	        & ! New CDOC1 input  (g C/m^3)
 				JinCDOC2,		& ! New	CDOC2 input  (g C/m^3)
 				JinCDOC3,		& ! New CDOC3 input  (g C/m^3)
@@ -292,11 +333,15 @@ REAL(SP)		   ::	JinCDOP1,		& ! New CDOP1 input  (g N/m^3)
 				JinNCDOP1,		& ! NEW NCDOP1 input (g N/m^3)
 				JinNCDOP2,		& ! New NCDOP2 input (g N/m^3)
 				JinNCDOP3		  ! New NCDOP3 input (g N/m^3)
+				
+				
+				
+				
 
 REAL(SP)				:: C1TEMP,    &  ! SEDIMENT LAYER TEMPORARY CONCENTRATION FROM DIFFUSION
 						   C2TEMP	 ! WATER COLUMN CONCENTRATION FROM DIFFUSION, UNUSED,
 				
-
+!Anaerbioc Layer Carbon
 REAL(SP),DIMENSION(:), ALLOCATABLE  ::   CDOC1     ,                & !the Colored G1 DOC  gC/m^3
 										 CDOC2     ,		& !the colored G2 DOC  gC/m^3
 										 CDOC3	 	          !the colored G3 DOC  gC/m^3
@@ -304,7 +349,15 @@ REAL(SP),DIMENSION(:), ALLOCATABLE  ::   CDOC1     ,                & !the Color
 REAL(SP),DIMENSION(:), ALLOCATABLE  ::   NCDOC1    ,		& !the non-colored G1 DOC gC/m^3
 										 NCDOC2    ,		& !the non-colored G2 DOC gC/m^3
 										 NCDOC3	                  !the non-colored G3 DOC gC/m^3
+! Aerobic Layer carbon										 
+REAL(SP),DIMENSION(:), ALLOCATABLE  ::   CDOC11     ,                & !the Colored G1 DOC  gC/m^3
+										 CDOC21     ,		& !the colored G2 DOC  gC/m^3
+										 CDOC31	 	          !the colored G3 DOC  gC/m^3
 
+REAL(SP),DIMENSION(:), ALLOCATABLE  ::   NCDOC11    ,		& !the non-colored G1 DOC gC/m^3
+										 NCDOC21   ,		& !the non-colored G2 DOC gC/m^3
+										 NCDOC31	                  !the non-colored G3 DOC gC/m^3										 
+! Anaerobic layer nitrogen
 REAL(SP), DIMENSION(:),  ALLOCATABLE  ::   CDON1     ,              & !the Colored G1 DON  gN/m^3
 										   CDON2     ,	         	& !the colored G2 DON  gN/m^3
 										   CDON3 	 	                  !the colored G3 DON  gN/m^3
@@ -313,6 +366,16 @@ REAL(SP),DIMENSION(:), ALLOCATABLE  ::   NCDON1    ,		& !the non-colored G1 DON 
 										 NCDON2    ,	        	& !the non-colored G2 DON gN/m^3
 										 NCDON3	                          !the non-colored G3 DON gN/m^3
 
+!Aerobic layer nitrogen
+REAL(SP), DIMENSION(:),  ALLOCATABLE  ::   CDON11     ,              & !the Colored G1 DON  gN/m^3
+										   CDON21     ,	         	& !the colored G2 DON  gN/m^3
+										   CDON31 	 	                  !the colored G3 DON  gN/m^3
+
+REAL(SP),DIMENSION(:), ALLOCATABLE  ::   NCDON11    ,		& !the non-colored G1 DON gN/m^3
+										 NCDON21   ,	        	& !the non-colored G2 DON gN/m^3
+										 NCDON31	                          !the non-colored G3 DON gN/m^3
+										 
+										 
 REAL(SP),DIMENSION(:), ALLOCATABLE  ::   CDOP1     ,                & !the Colored G1 DOP  gP/m^3
 										 CDOP2          ,		& !the colored G2 DOP  gP/m^3
 										 CDOP3	 	                  !the colored G3 DOP  gP/m^3
@@ -389,8 +452,10 @@ REAL(SP)		           ::   JDIAGDON1   ,		& ! the flux of G1 DON lost to diagenes
 								JDIAGDON3		  ! the flux of G3 DON lost to diagenesis (g N/m^2/day)
 
 
-REAL(SP),DIMENSION(:), ALLOCATABLE  ::   JDOCX_OUT   , 		& ! the flux of DOC that is passed to diagenesis in mod_sed (g C/m^2/day)
-										 JDONX_OUT   ,		& ! the flux of DON that is passed to diagenesis in mod_sed (g N/m^2/day)
+REAL(SP),DIMENSION(:), ALLOCATABLE  ::   JDOCX_OUT1   , 		& ! the flux of DOC that is passed to diagenesis in mod_sed (g C/m^2/day)
+										  JDOCX_OUT2   , 		& ! the flux of DOC that is passed to diagenesis in mod_sed (g C/m^2/day) 
+										JDONX_OUT1   ,		& ! the flux of DON that is passed to diagenesis in mod_sed (g N/m^2/day) in layer 1
+										 JDONX_OUT2   ,		& ! the flux of DON that is passed to diagenesis in mod_sed (g N/m^2/day) in layer 2
 										 JDOPX_OUT	      	  ! the flux of DOP that is passed to diagenesis in mod_sed (g P/m^2/day)
 
 !************************ END FLUX VARS **************************
@@ -420,6 +485,14 @@ ALLOCATE(SED_TEMP(MTLOC))
  ALLOCATE(NCDOC2(MTLOC))
  ALLOCATE(NCDOC3(MTLOC))
  
+ ALLOCATE(CDOC11(MTLOC))
+ ALLOCATE(CDOC21(MTLOC))
+ ALLOCATE(CDOC31(MTLOC))
+
+ ALLOCATE(NCDOC11(MTLOC))
+ ALLOCATE(NCDOC21(MTLOC))
+ ALLOCATE(NCDOC31(MTLOC))
+ 
  ALLOCATE(CDON1(MTLOC))
  ALLOCATE(CDON2(MTLOC))
  ALLOCATE(CDON3(MTLOC))
@@ -427,6 +500,15 @@ ALLOCATE(SED_TEMP(MTLOC))
  ALLOCATE(NCDON1(MTLOC))
  ALLOCATE(NCDON2(MTLOC))
  ALLOCATE(NCDON3(MTLOC))
+ 
+ ALLOCATE(CDON11(MTLOC))
+ ALLOCATE(CDON21(MTLOC))
+ ALLOCATE(CDON31(MTLOC))
+
+ ALLOCATE(NCDON11(MTLOC))
+ ALLOCATE(NCDON21(MTLOC))
+ ALLOCATE(NCDON31(MTLOC))
+ 
  
  ALLOCATE(CDOP1(MTLOC))
  ALLOCATE(CDOP2(MTLOC))
@@ -436,8 +518,10 @@ ALLOCATE(SED_TEMP(MTLOC))
  ALLOCATE(NCDOP2(MTLOC))
  ALLOCATE(NCDOP3(MTLOC))
 
- ALLOCATE(JDOCX_OUT(MTLOC))
- ALLOCATE(JDONX_OUT(MTLOC))
+ ALLOCATE(JDOCX_OUT1(MTLOC))
+  ALLOCATE(JDOCX_OUT2(MTLOC))
+ ALLOCATE(JDONX_OUT1(MTLOC))
+ ALLOCATE(JDONX_OUT2(MTLOC))
  ALLOCATE(JDOPX_OUT(MTLOC))
  
  ALLOCATE(VAR_OUT_GL(MGL,1:18)) ! allocate to the global array size and the 18 variables
@@ -484,6 +568,14 @@ IF(ALLOCATED(NCDOC1))  DEALLOCATE(NCDOC1)
 IF(ALLOCATED(NCDOC2))  DEALLOCATE(NCDOC2)
 IF(ALLOCATED(NCDOC3))  DEALLOCATE(NCDOC3)
 
+IF(ALLOCATED(CDOC11))   DEALLOCATE(CDOC11)
+IF(ALLOCATED(CDOC21))   DEALLOCATE(CDOC21)
+IF(ALLOCATED(CDOC31))   DEALLOCATE(CDOC31)
+
+IF(ALLOCATED(NCDOC11))  DEALLOCATE(NCDOC11)
+IF(ALLOCATED(NCDOC21))  DEALLOCATE(NCDOC21)
+IF(ALLOCATED(NCDOC31))  DEALLOCATE(NCDOC31)
+
 IF(ALLOCATED(CDON1))   DEALLOCATE(CDON1)
 IF(ALLOCATED(CDON2))   DEALLOCATE(CDON2)
 IF(ALLOCATED(CDON3))   DEALLOCATE(CDON3)
@@ -491,6 +583,14 @@ IF(ALLOCATED(CDON3))   DEALLOCATE(CDON3)
 IF(ALLOCATED(NCDON1))  DEALLOCATE(NCDON1)
 IF(ALLOCATED(NCDON2))  DEALLOCATE(NCDON2)
 IF(ALLOCATED(NCDON3))  DEALLOCATE(NCDON3)
+
+IF(ALLOCATED(CDON11))   DEALLOCATE(CDON11)
+IF(ALLOCATED(CDON21))   DEALLOCATE(CDON21)
+IF(ALLOCATED(CDON31))   DEALLOCATE(CDON31)
+
+IF(ALLOCATED(NCDON11))  DEALLOCATE(NCDON11)
+IF(ALLOCATED(NCDON21))  DEALLOCATE(NCDON21)
+IF(ALLOCATED(NCDON31))  DEALLOCATE(NCDON31)
 
 IF(ALLOCATED(CDOP1))   DEALLOCATE(CDOP1)
 IF(ALLOCATED(CDOP2))   DEALLOCATE(CDOP2)
@@ -511,8 +611,10 @@ IF(ALLOCATED(TIDE_STAGE)) DEALLOCATE(TIDE_STAGE)
 IF(ALLOCATED(SED_ADV)) DEALLOCATE(SED_ADV)
 ! ========================= Flux to Sediments ============================
 
-IF(ALLOCATED(JDOCX_OUT))  DEALLOCATE(JDOCX_OUT)
-IF(ALLOCATED(JDONX_OUT))  DEALLOCATE(JDONX_OUT)
+IF(ALLOCATED(JDOCX_OUT1))  DEALLOCATE(JDOCX_OUT1)
+IF(ALLOCATED(JDOCX_OUT2))  DEALLOCATE(JDOCX_OUT2)
+IF(ALLOCATED(JDONX_OUT1))  DEALLOCATE(JDONX_OUT1)
+IF(ALLOCATED(JDONX_OUT2))  DEALLOCATE(JDONX_OUT2)
 IF(ALLOCATED(JDOPX_OUT))  DEALLOCATE(JDOPX_OUT)
 
 END SUBROUTINE SED_DOM_DEALLOC
@@ -596,22 +698,38 @@ SAV_CALC = .FALSE.
            
  JNCMDOC(:) = 0.0
  JCMDOC(:) =0.0
-           
+ 
+ !Anaerobic Layer carbon
  CDOC1TM1 = 20
  CDOC2TM1 = 15
  CDOC3TM1 = 3
  NCDOC1TM1 = 20 
  NCDOC2TM1 = 15
  NCDOC3TM1 =3
-         
 
+ !Aerobic Layer carbon
+ CDOC11TM1 = 1
+ CDOC21TM1 = 1
+ CDOC31TM1 = 1
+ NCDOC11TM1 = 1 
+ NCDOC21TM1 = 1
+ NCDOC31TM1 =1
+         
+!Anaerobic Layer Nitrogen
  CDON1TM1 = 0.2334 ! (CDOC1TM1*M_NtoC)
  CDON2TM1 = 0.1750 
  CDON3TM1 = 0.0350
  NCDON1TM1 = 0.2334
  NCDON2TM1 = 0.1750
  NCDON3TM1 = 0.0350
-         
+ 
+!Aerobic Layer carbon
+ CDON11TM1 = 0.1
+ CDON11TM1 = 0.1
+ CDON31TM1 = 0.1
+ NCDON11TM1 = 0.1 
+ NCDON21TM1 = 0.1
+ NCDON31TM1 = 0.1         
 
  CDOP1TM1 = 0.02334
  CDOP2TM1 = 0.01750
@@ -659,6 +777,14 @@ SAV_CALC = .FALSE.
  NCDOC1(:)  = 1.0 
  NCDOC2(:)  = 1.0 
  NCDOC3(:)  = 1.0 
+ 
+ CDOC11(:)   = 1.0 
+ CDOC21(:)   = 1.0 
+ CDOC31(:)   = 1.0  
+           
+ NCDOC11(:)  = 1.0 
+ NCDOC21(:)  = 1.0 
+ NCDOC31(:)  = 1.0 
            
  CDON1(:)   = 0.25 
  CDON2(:)   = 0.25 
@@ -667,6 +793,14 @@ SAV_CALC = .FALSE.
  NCDON1(:)  = 0.25 
  NCDON2(:)  = 0.25 
  NCDON3(:)  = 0.25 
+ 
+ CDON11(:)   = 0.25 
+ CDON21(:)   = 0.25 
+ CDON31(:)   = 0.25 
+           
+ NCDON11(:)  = 0.25 
+ NCDON21(:)  = 0.25 
+ NCDON31(:)  = 0.25 
            
  CDOP1(:)   = 0.01 
  CDOP2(:)   = 0.01
@@ -692,8 +826,10 @@ SAV_CALC = .FALSE.
  JDIAGDON3  = 0.0 
            
            
- JDOCX_OUT(:) = 0.0 
- JDONX_OUT(:) = 0.0 
+ JDOCX_OUT1(:) = 0.0 
+  JDOCX_OUT2(:) = 0.0 
+ JDONX_OUT1(:) = 0.0 
+ JDONX_OUT2(:) = 0.0 
  JDOPX_OUT(:) = 0.0 
 
 
@@ -1157,8 +1293,10 @@ END SUBROUTINE SED_DOM_OUTPUT
 	
 SUBROUTINE SED_DOM_CALC
 
-USE MOD_SED_DOM_EXCHANGE, ONLY: JDOCX_SHARE,    &  !Diagenesis DOC flux  (mg C/m^2)
-								JDONX_SHARE,    &  !Diagenesis DON flux
+USE MOD_SED_DOM_EXCHANGE, ONLY: JDOCX_SHARE1,    &  !Diagenesis DOC flux  (mg C/m^2)
+								 JDOCX_SHARE2,    &  !Diagenesis DOC flux  (mg C/m^2)
+								JDONX_SHARE1,    &  !Diagenesis DON flux layer 1
+		        				JDONX_SHARE2,    &  !Diagenesis DON flux layer 2
 								JDOPX_SHARE,    &   !Diagenesis DOP flux
 								SED_TEMP_SHARE,    &
 								ZSED_SHARE,     &
@@ -1255,15 +1393,23 @@ END IF
 	
 !get the concentration from the previous time step
 
-!CARBON	
+!CARBON	, ANaerobic Layer
 	CDOC1TM1  = CDOC1(I)  !get the DOC concentration from the previous time step (CDOC1(t-dt))
 	CDOC2TM1  = CDOC2(I)
 	CDOC3TM1  = CDOC3(I)
 	NCDOC1TM1 = NCDOC1(I)
 	NCDOC2TM1 = NCDOC2(I)
 	NCDOC3TM1 = NCDOC3(I)
+!CARBON	in aerobic layer
+	CDOC11TM1  = CDOC11(I)  !get the DOC concentration from the previous time step (CDOC1(t-dt))
+	CDOC21TM1  = CDOC21(I)
+	CDOC31TM1  = CDOC31(I)
+	NCDOC11TM1 = NCDOC11(I)
+	NCDOC21TM1 = NCDOC21(I)
+	NCDOC31TM1 = NCDOC31(I)
+	
 
-!NITROGEN
+!NITROGEN in Anaerobic Layer
 	CDON1TM1 = CDON1(I)
 	CDON2TM1 = CDON2(I)
     CDON3TM1 = CDON3(I)
@@ -1271,6 +1417,14 @@ END IF
 	NCDON1TM1 = NCDON1(I)
 	NCDON2TM1 = NCDON2(I)
 	NCDON3TM1 = NCDON3(I)
+	
+!Nitrogen	in aerobic layer
+	CDON11TM1  = CDON11(I)  !get the DOC concentration from the previous time step (CDOC1(t-dt))
+	CDON21TM1  = CDON21(I)
+	CDON31TM1  = CDON31(I)
+	NCDON11TM1 = NCDON11(I)
+	NCDON21TM1 = NCDON21(I)
+	NCDON31TM1 = NCDON31(I)	
 
 !PHOSPHORUS
 	CDOP1TM1 =  CDOP1(I)	
@@ -1325,6 +1479,31 @@ END IF
 	JinNCDOP1 = JinNCDOC1*APCM
 	JinNCDOP2 = JinNCDOC2*APCM
 	JinNCDOP3 = JinNCDOC3*APCM
+	
+!====== New Addition, B Clark April 2017, Two layer model diffusion from OLW into layer 1
+	
+	JinCDOC11 = JinCDOC1 + S_SHARE*WC_CDOC1(I,KBM1)  ! plant input (g C m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinCDOC21 = JinCDOC1 + S_SHARE*WC_CDOC2(I,KBM1)
+	JinCDOC31 = JinCDOC1 + S_SHARE*WC_CDOC3(I,KBM1)	
+	JinNCDOC11 = JinNCDOC1 + S_SHARE*WC_NCDOC1(I,KBM1)  ! plant input (g C m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinNCDOC21 = JinNCDOC1 + S_SHARE*WC_NCDOC2(I,KBM1)
+	JinNCDOC31 = JinNCDOC1 + S_SHARE*WC_NCDOC3(I,KBM1)		
+
+! Nitrogen
+	JinCDON11 = JinCDON1 + S_SHARE*WC_CDON1(I,KBM1)  ! plant input (g N m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinCDON21 = JinCDON1 + S_SHARE*WC_CDON2(I,KBM1)
+	JinCDON31 = JinCDON1 + S_SHARE*WC_CDON3(I,KBM1)	
+	JinNCDON11 = JinNCDON1 + S_SHARE*WC_NCDON1(I,KBM1)  ! plant input (g N m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinNCDON21 = JinNCDON1 + S_SHARE*WC_NCDON2(I,KBM1)
+	JinNCDON31 = JinNCDON1 + S_SHARE*WC_NCDON3(I,KBM1)		
+	
+! Phosphorus
+	JinCDOP11 = JinCDOP1 + S_SHARE*WC_CDOP1(I,KBM1)  ! plant input (g P m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinCDOP21 = JinCDOP1 + S_SHARE*WC_CDOP2(I,KBM1)
+	JinCDOP31 = JinCDOP1 + S_SHARE*WC_CDOP3(I,KBM1)	
+	JinNCDOP11 = JinNCDOP1 + S_SHARE*WC_NCDOP1(I,KBM1)  ! plant input (g P m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinNCDOP21 = JinNCDOP1 + S_SHARE*WC_NCDOP2(I,KBM1)
+	JinNCDOP31 = JinNCDOP1 + S_SHARE*WC_NCDOP3(I,KBM1)			
 
 !Get the temperature adjusted decay rate from GET_ZHTA function
 !CARBON	
@@ -1346,7 +1525,7 @@ END IF
 	XKDOP3=GET_ZHTA(KDOP3,SED_TEMP(I),thetaDOP3)
 	
 	!!!*********************** ADD IN HYDROLYSIS FLUX FROM POC****************************
-	
+	!! Only occurs in the anaerobic layer
 	
 	IF (HYDRO_FLAG) THEN
 	
@@ -1372,6 +1551,24 @@ END IF
 		NCDOP1TM1=NCDOP1TM1+(1-POCCF1) * FX_POP1TM1(I)*DT
 		NCDOP2TM1=NCDOP2TM1+(1-POCCF2) * FX_POP2TM1(I)*DT
 		NCDOP3TM1=NCDOP3TM1+(1-POCCF3) * FX_POP3TM1(I)*DT
+		
+	    !! Layer 1 hydrolysis fraction, doesnt happen (no layer 1 DOM)
+		!CDOC11TM1=CDOC11TM1+POCCF1 * FX_POC1TM1(I)*DT
+		!CDOC21TM1=CDOC21TM1+POCCF2 * FX_POC2TM1(I)*DT
+		!CDOC31TM1=CDOC31TM1+POCCF3 * FX_POC3TM1(I)*DT
+		
+		!NCDOC11TM1=NCDOC11TM1+(1-POCCF1) * FX_POC1TM1(I)*DT
+		!NCDOC21TM1=NCDOC21TM1+(1-POCCF2) * FX_POC2TM1(I)*DT
+		!NCDOC31TM1=NCDOC31TM1+(1-POCCF3) * FX_POC3TM1(I)*DT
+
+		!	
+		!CDON11TM1=CDON11TM1+POCCF1 * FX_PON1TM1(I)*DT
+		!CDON21TM1=CDON21TM1+POCCF2 * FX_PON2TM1(I)*DT
+		!CDON31TM1=CDON31TM1+POCCF3 * FX_PON3TM1(I)*DT
+		!NCDON11TM1=NCDON11TM1+(1-POCCF1) * FX_PON1TM1(I)*DT
+		!NCDON21TM1=NCDON21TM1+(1-POCCF2) * FX_PON2TM1(I)*DT
+		!NCDON31TM1=NCDON31TM1+(1-POCCF3) * FX_PON3TM1(I)*DT
+	
 	
 	ENDIF
 	
@@ -1403,120 +1600,277 @@ END IF
 	 !  DDOM = DOM_diff
 	  !DDOM = 0.0005
 	!  write(*,*)'DDOM = ',DDOM
-	  DD = DDOM/ZSED(I) !+ SED_ADV(I)*0.1  ! add in the percolation to the diffusion coefficient to get total mixing  !diffusion is usually m^2/d, mixing rate = diffusion/depth = m/d
+	 ! DD = DDOM/ZSED(I) !+ SED_ADV(I)*0.1  ! add in the percolation to the diffusion coefficient to get total mixing  !diffusion is usually m^2/d, mixing rate = diffusion/depth = m/d
 	 
 	!  write(*,*) 'Diffusion = ',DD
 	!  write(*,*)'DDOM =',DDOM
 	  
 	!  write(*,*)'DD =',DD
+	  DD = KL12_SHARE  ! Mas Transfer velocity from mod_sed m/d
+	  
 	  DD_Z=DD/ZSED(I)   ! DEPTH INTEGRATED DIFFUSION RATE FOR SOLVING FOR SEDIMENT CONCS  1/DAY
 	  
 	  
+	  !write(*,*)'KL12_SHARE = ',KL12_SHARE
+	 ! DD_Z = S_SHARE/HSED1!S_SHARE/ZSED(I)*0.1
+	  
+	  !S_SHARE = DD_Z
+
 !COlORED CARBON	  
-	   ALPHA = (-XKDOC1 - W2_Z - DD_Z-temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms
+	   ALPHA1 = -(XKDOC1 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDOC1 + W2_Z + DD_Z + temp_absC)
+	
 	   
- CALL DDOM_SOLVER(CDOC1(I),C2TEMP,CDOC1TM1,WC_CDOC1(I,KBM1),DD_Z, ALPHA, DT, JinCDOC1)
+	   !write(*,*)'JINCODC11 = ',JINCDOC11
+	   !write(*,*)'JINCDOC1 = ',JinCDOC1
+	   
+ CALL DDOM_SOLVER(CDOC11(I),CDOC1(I),CDOC11TM1, CDOC1TM1,ALPHA1, ALPHA2, DD, DT, JinCDOC11, JinCDOC1)
 	 
-	 JWCDOC1(I) = -DD*(WC_CDOC1(I,KBM1) - CDOC1(I))
+ !write(*,*)' CDOC in layer 1 = ',CDOC11(I)
  
-     ALPHA = (-XKDOC2 - W2_Z - DD_Z-temp_absC) 	
+ !write(*,*)'S SHare = ',S_SHARE
+ 
+	 JWCDOC1(I) = -S_SHARE*(WC_CDOC1(I,KBM1) - CDOC11(I))
 	 
- !write(*,*)'WC_CDOC1 after = ',WC_CDOC1(I,KBM1)
-
+	 !write(*,*)' JWCDOC1 = ',JWCDOC1
  
- CALL DDOM_SOLVER(CDOC2(I),C2TEMP,CDOC2TM1,WC_CDOC2(I,KBM1),DD_Z, ALPHA, DT, JinCDOC2)		  
-   
-     JWCDOC2(I) = -DD*(WC_CDOC2(I,KBM1) - CDOC2(I)) ! gC /m^2/day
-   
-	 ALPHA = (-XKDOC3 - W2_Z - DD_Z-temp_absC) 	
- CALL DDOM_SOLVER(CDOC3(I),C2TEMP,CDOC3TM1,WC_CDOC3(I,KBM1),DD_Z, ALPHA, DT, JinCDOC3)
-  
-     JWCDOC3(I) = -DD*(WC_CDOC3(I,KBM1) - CDOC3(I)) 
-
-!!!***NON-COLORED CARBON
- 
-     ALPHA = (-XKDOC1 - W2_Z - DD_Z-temp_absC) 	
-CALL DDOM_SOLVER(NCDOC1(I),C2TEMP,NCDOC1TM1,WC_NCDOC1(I,KBM1),DD_Z, ALPHA, DT,JinNCDOC1)
+	   ALPHA1 = -( XKDOC2 +W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDOC2 + W2_Z + DD_Z + temp_absC)
+	
+	   
+ CALL DDOM_SOLVER(CDOC21(I),CDOC2(I),CDOC21TM1, CDOC2TM1,ALPHA1, ALPHA2, DD, DT, JinCDOC21, JinCDOC2)
 	 
-	 JWNCDOC1(I) = -DD*(WC_NCDOC1(I,KBM1) - NCDOC1(I))
-
-     ALPHA = (-XKDOC2 - W2_Z - DD_Z-temp_absC) 		
-CALL DDOM_SOLVER(NCDOC2(I),C2TEMP,NCDOC2TM1,WC_NCDOC2(I,KBM1),DD_Z, ALPHA, DT, JinNCDOC2)
-
-	 JWNCDOC2(I) = -DD*(WC_NCDOC2(I,KBM1) - NCDOC2(I))
-
-     ALPHA = (-XKDOC3 - W2_Z - DD_Z-temp_absC) 	
- CALL DDOM_SOLVER(NCDOC3(I),C2TEMP,NCDOC3TM1,WC_NCDOC3(I,KBM1),DD_Z, ALPHA, DT, JinNCDOC3)
+ write(*,*)' CDOC2 in layer 1 = ',CDOC21(I)
+	 JWCDOC2(I) = -S_SHARE*(WC_CDOC2(I,KBM1) - CDOC21(I))
+ write(*,*)' JWCDOC2 = ',JWCDOC2 
  
-     JWNCDOC3(I) = -DD*(WC_NCDOC3(I,KBM1) - NCDOC3(I))
-
-!!!***COLORED NITROGEN
+	   ALPHA1 = -( XKDOC3 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDOC3 + W2_Z + DD_Z + temp_absC)
+	
+	   
+ CALL DDOM_SOLVER(CDOC31(I),CDOC3(I),CDOC31TM1, CDOC3TM1,ALPHA1, ALPHA2, DD,DT, JinCDOC31, JinCDOC3)
 	 
-	 ALPHA = (-XKDON1 - W2_Z - DD_Z-temp_absN) 	
-CALL DDOM_SOLVER(CDON1(I),C2TEMP,CDON1TM1,WC_CDON1(I,KBM1),DD_Z, ALPHA, DT, JinCDON1)
-
-     JWCDON1(I) = -DD*(WC_CDON1(I,KBM1) - CDON1(I))
-		  
-	 ALPHA = (-XKDON2 - W2_Z - DD_Z-temp_absN) 		 
-CALL DDOM_SOLVER(CDON2(I),C2TEMP,CDON2TM1,WC_CDON2(I,KBM1),DD_Z, ALPHA, DT,  JinCDON2)		  
-
-     JWCDON2(I) = -DD*(WC_CDON2(I,KBM1) - CDON2(I))
-			 
-	 ALPHA = (-XKDON3 - W2_Z - DD_Z-temp_absN) 	 
- CALL DDOM_SOLVER(CDON3(I),C2TEMP,CDON3TM1,WC_CDON3(I,KBM1),DD_Z, ALPHA, DT, JinCDON3)	
+ !write(*,*)' CDOC3 in layer 1 = ',CDOC31(I)
+	 JWCDOC3(I) = -S_SHARE*(WC_CDOC3(I,KBM1) - CDOC31(I))
+ !write(*,*)' JWCDOC3 = ',JWCDOC3 
  
-     JWCDON3(I) = -DD*(WC_CDON3(I,KBM1) - CDON3(I))
- 
-!!!****NON COLORED NITROGEN
-			  
-	 ALPHA = (-XKDON1 - W2_Z - DD_Z-temp_absN) 	
- CALL DDOM_SOLVER(NCDON1(I),C2TEMP,NCDON1TM1,WC_NCDON1(I,KBM1),DD_Z, ALPHA, DT, JinNCDON1)	
- 
-     JWNCDON1(I) = -DD*(WC_NCDON1(I,KBM1) - NCDON1(I))
- 
-	 ALPHA = (-XKDON2 - W2_Z - DD_Z-temp_absN) 	 
- CALL DDOM_SOLVER(NCDON2(I),C2TEMP,NCDON2TM1,WC_NCDON2(I,KBM1),DD_Z, ALPHA, DT,JinNCDON2)		  
-
-	 JWNCDON2(I) = -DD*(WC_NCDON2(I,KBM1) - NCDON2(I))
-			 
-	 ALPHA = (-XKDON3 - W2_Z - DD_Z-temp_absN) 	
-CALL DDOM_SOLVER(NCDON3(I),C2TEMP,NCDON3TM1,WC_NCDON3(I,KBM1),DD_Z, ALPHA, DT,JinNCDON3)	
-
-     JWNCDON3(I) = -DD*(WC_NCDON3(I,KBM1) - NCDON3(I))
-
-!!!***COLORED PHOSPHORUS
+!Non-COlORED CARBON	  
+	   ALPHA1 = -( XKDOC1 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDOC1 + W2_Z + DD_Z + temp_absC)
+	
+ CALL DDOM_SOLVER(NCDOC11(I),NCDOC1(I),NCDOC11TM1, NCDOC1TM1,ALPHA1, ALPHA2,DD, DT, JinNCDOC11, JinNCDOC1)
 	 
-	 ALPHA = (-XKDOP1 - W2_Z - DD_Z) 	
- CALL DDOM_SOLVER(CDOP1(I) ,C2TEMP,CDOP1TM1,WC_CDOP1(I,KBM1),DD_Z, ALPHA, DT,JinCDOP1)		  
-
-     JWCDOP1(I) = -DD*(WC_CDOP1(I,KBM1) - CDOP1(I))
-
-	 ALPHA = (-XKDOP2 - W2_Z - DD_Z) 	
-CALL DDOM_SOLVER(CDOP2(I),C2TEMP,CDOP2TM1,WC_CDOP2(I,KBM1),DD_Z, ALPHA, DT, JinCDOP2)	
-
-	 JWCDOP2(I) = -DD*(WC_CDOP2(I,KBM1) - CDOP2(I))
-		 
-	 ALPHA = (-XKDOP3 - W2_Z - DD_Z) 	
-CALL DDOM_SOLVER(CDOP3(I),C2TEMP,CDOP3TM1,WC_CDOP3(I,KBM1),DD_Z, ALPHA, DT,  JinCDOP3)
-
-	 JWCDOP3(I) = -DD*(WC_CDOP3(I,KBM1) - CDOP3(I))
-
-!!!****NON COLORED PHOSPHORUS
+ !write(*,*)' NCDOC in layer 1 = ',NCDOC11(I)
+ 
+	 JWNCDOC1(I) = -S_SHARE*(WC_NCDOC1(I,KBM1) - NCDOC11(I))
 	 
-	 ALPHA = (-XKDOP1 - W2_Z - DD_Z) 	
- CALL DDOM_SOLVER(NCDOP1(I),C2TEMP,NCDOP1TM1,WC_NCDOP1(I,KBM1),DD_Z, ALPHA, DT, JinNCDOP1)		  
+	 !write(*,*)' JWNCDOC1 = ',JWNCDOC1
+
+	   ALPHA1 = -(XKDOC2 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDOC2 + W2_Z + DD_Z + temp_absC)
+	
+	   
+ CALL DDOM_SOLVER(NCDOC21(I),NCDOC2(I),NCDOC21TM1, NCDOC2TM1,ALPHA1, ALPHA2, DD,DT, JinNCDOC21, JinNCDOC2)
 	 
-	 JWNCDOP1(I) = -DD*(WC_NCDOP1(I,KBM1) - NCDOP1(I))
-		  
-	 ALPHA = (-XKDOP2 - W2_Z - DD_Z) 	
-CALL DDOM_SOLVER(NCDOP2(I),C2TEMP,NCDOP2TM1,WC_NCDOP2(I,KBM1),DD_Z, ALPHA, DT, JinNCDOP2)		  
+ !write(*,*)' NCDOC2 in layer 1 = ',NCDOC21(I)
+ 
+	 JWNCDOC2(I) = -S_SHARE*(WC_NCDOC2(I,KBM1) - NCDOC21(I))
+	 
+	 !write(*,*)' JWNCDOC2 = ',JWNCDOC2
 
-	 JWNCDOP2(I) = -DD*(WC_NCDOP2(I,KBM1) - NCDOP2(I))
+	   ALPHA1 = -(XKDOC3 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDOC3 + W2_Z + DD_Z + temp_absC)
+	
+	   
+ CALL DDOM_SOLVER(NCDOC31(I),NCDOC3(I),NCDOC31TM1, NCDOC3TM1,ALPHA1, ALPHA2, DD,DT, JinNCDOC31, JinNCDOC3)
+	 
+ !write(*,*)' NCDOC3 in layer 1 = ',NCDOC31(I)
+ 
+	 JWNCDOC3(I) = -S_SHARE*(WC_NCDOC3(I,KBM1) - NCDOC31(I))
+	 
+	 !write(*,*)' JWNCDOC3 = ',JWNCDOC3
 
-	 ALPHA = (-XKDOP3 - W2_Z - DD_Z) 	
-CALL DDOM_SOLVER(NCDOP3(I),C2TEMP,NCDOP3TM1,WC_NCDOP3(I,KBM1),DD_Z, ALPHA, DT, JinNCDOP3)	
+	 
+!COlORED Nitrogen	  
+	   ALPHA1 = -(XKDON1 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDON1 + W2_Z + DD_Z + temp_absN)
 
-     JWNCDOP3(I) = -DD*(WC_NCDOP3(I,KBM1) - NCDOP3(I))   ! PASS THE FLUX TO THE WATER COLUMN
+ CALL DDOM_SOLVER(CDON11(I),CDON1(I),CDON11TM1,CDON1TM1,ALPHA1, ALPHA2, DD, DT, JinCDON11, JinCDON1)
+
+	 JWCDON1(I) = -S_SHARE*(WC_CDON1(I,KBM1) - CDON11(I))
+	  
+	   ALPHA1 = -(XKDON2 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDON2 + W2_Z + DD_Z + temp_absN)
+	
+	   
+ CALL DDOM_SOLVER(CDON21(I),CDON2(I),CDON21TM1, CDON2TM1,ALPHA1, ALPHA2, DD, DT, JinCDON21, JinCDON2)
+	 
+
+	 JWCDON2(I) = -S_SHARE*(WC_CDON2(I,KBM1) - CDON21(I))
+
+	   ALPHA1 = -(XKDON3 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDON3 + W2_Z + DD_Z + temp_absN)
+	
+	   
+ CALL DDOM_SOLVER(CDON31(I),CDON3(I),CDON31TM1, CDON3TM1,ALPHA1, ALPHA2, DD,DT, JinCDON31, JinCDON3)
+	 
+	 JWCDON3(I) = -S_SHARE*(WC_CDON3(I,KBM1) - CDON31(I))
+
+!Non-COlORED Nitrogen	  
+	   ALPHA1 = -(XKDON1 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDON1 + W2_Z + DD_Z + temp_absN)
+	
+ CALL DDOM_SOLVER(NCDON11(I),NCDON1(I),NCDON11TM1, NCDON1TM1,ALPHA1, ALPHA2,DD, DT, JinNCDON11, JinNCDON1)
+
+	 JWNCDON1(I) = -S_SHARE*(WC_NCDON1(I,KBM1) - NCDON11(I))
+	 
+	   ALPHA1 = -(XKDON2 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDON2 + W2_Z + DD_Z + temp_absN)
+	
+	   
+ CALL DDOM_SOLVER(NCDON21(I),NCDON2(I),NCDON21TM1, NCDON2TM1,ALPHA1, ALPHA2, DD,DT, JinNCDON21, JinNCDON2)
+	 
+	 JWNCDON2(I) = -S_SHARE*(WC_NCDON2(I,KBM1) - NCDON21(I))
+	 
+	   ALPHA1 = -(XKDON3 +W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA2 = -(XKDON3 + W2_Z + DD_Z + temp_absN)
+	
+	   
+ CALL DDOM_SOLVER(NCDON31(I),NCDON3(I),NCDON31TM1, NCDON3TM1,ALPHA1, ALPHA2, DD,DT, JinNCDON31, JinNCDON3)
+	 
+	 JWNCDON3(I) = -S_SHARE*(WC_NCDON3(I,KBM1) - NCDON31(I))
+	 
+	 
+!     ALPHA = (-XKDOC2 - W2_Z - DD_Z-temp_absC) 		 
+! CALL DDOM_SOLVER(CDOC2(I),CDOC21(I),CDOC2TM1,CDOC21TM1,DD_Z, ALPHA2, DT, JinCDOC2)		  
+!   
+!     JWCDOC2(I) = -S_SHARE*(WC_CDOC2(I,KBM1) - CDOC21(I)) ! gC /m^2/day
+!   
+!	 ALPHA = (-XKDOC3 - W2_Z - DD_Z-temp_absC) 		 
+! CALL DDOM_SOLVER(CDOC3(I),CDOC31(I),CDOC3TM1,CDOC31TM1,DD_Z, ALPHA, DT, JinCDOC3)
+!  
+!     JWCDOC3(I) = -S_SHARE*(WC_CDOC3(I,KBM1) - CDOC31(I)) 
+
+!!!!***NON-COLORED CARBON
+! 
+!     ALPHA = (-XKDOC1 - W2_Z - DD_Z-temp_absC) 		 
+!CALL DDOM_SOLVER(NCDOC1(I),NCDOC11(I),NCDOC1TM1,NCDOC11TM1,DD_Z, ALPHA, DT,JinNCDOC1)
+!	 
+!	 JWNCDOC1(I) = -S_SHARE*(WC_NCDOC1(I,KBM1) - NCDOC11(I))
+
+!     ALPHA = (-XKDOC2 - W2_Z - DD_Z-temp_absC) 		
+!CALL DDOM_SOLVER(NCDOC2(I),NCDOC21(I),NCDOC2TM1,NCDOC21TM1,DD_Z, ALPHA, DT, JinNCDOC2)
+
+!	 JWNCDOC2(I) = -S_SHARE*(WC_NCDOC2(I,KBM1) - NCDOC21(I))
+
+!     ALPHA = (-XKDOC3 - W2_Z - DD_Z-temp_absC) 	
+! CALL DDOM_SOLVER(NCDOC3(I),NCDOC31(I),NCDOC3TM1,NCDOC31TM1,DD_Z, ALPHA, DT, JinNCDOC3)
+! 
+!     JWNCDOC3(I) = -S_SHARE*(WC_NCDOC3(I,KBM1) - NCDOC31(I))
+
+!	 
+!!COlORED NITROGEN	  
+!	   ALPHA = (-XKDON1 - W2_Z - DD_Z-temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	   
+! CALL DDOM_SOLVER(CDON1(I),CDON11(I),CDON1TM1,CDON11TM1,DD_Z, ALPHA, DT, JinCDON1)
+!	 
+! write(*,*)' CDON in layer 1 = ',CDON11(I)
+!	 JWCDON1(I) = -S_SHARE*(WC_CDON1(I,KBM1) - CDON11(I))
+! 
+!     ALPHA = (-XKDON2 - W2_Z - DD_Z-temp_absN) 		 
+! CALL DDOM_SOLVER(CDON2(I),CDON21(I),CDON2TM1,CDON21TM1,DD_Z, ALPHA, DT, JinCDON2)		  
+!   
+!     JWCDON2(I) = -S_SHARE*(WC_CDON2(I,KBM1) - CDON21(I)) ! gC /m^2/day
+!   
+!	 ALPHA = (-XKDON3 - W2_Z - DD_Z-temp_absN) 		 
+! CALL DDOM_SOLVER(CDON3(I),CDON31(I),CDON3TM1,CDON31TM1,DD_Z, ALPHA, DT, JinCDON3)
+!  
+!     JWCDON3(I) = -S_SHARE*(WC_CDON3(I,KBM1) - CDON31(I)) 
+
+!!!!***NON-COLORED NITROGEN
+! 
+!     ALPHA = (-XKDON1 - W2_Z - DD_Z-temp_absN) 		 
+!CALL DDOM_SOLVER(NCDON1(I),NCDON11(I),NCDON1TM1,NCDON11TM1,DD_Z, ALPHA, DT,JinNCDON1)
+!	 
+!	 JWNCDOC1(I) = -S_SHARE*(WC_NCDON1(I,KBM1) - NCDON11(I))
+
+!     ALPHA = (-XKDOC2 - W2_Z - DD_Z-temp_absN) 		
+!CALL DDOM_SOLVER(NCDON2(I),NCDON21(I),NCDON2TM1,NCDON21TM1,DD_Z, ALPHA, DT, JinNCDON2)
+
+!	 JWNCDON2(I) = -S_SHARE*(WC_NCDON2(I,KBM1) - NCDON21(I))
+
+!     ALPHA = (-XKDON3 - W2_Z - DD_Z-temp_absN) 	
+! CALL DDOM_SOLVER(NCDON3(I),NCDON31(I),NCDON3TM1,NCDON31TM1,DD_Z, ALPHA, DT, JinNCDON3)
+! 
+!     JWNCDON3(I) = -S_SHARE*(WC_NCDON3(I,KBM1) - NCDON31(I))
+!	 
+!	 
+!!!!!***COLORED NITROGEN
+!!	 
+!!	 ALPHA = (-XKDON1 - W2_Z - DD_Z-temp_absN) 	
+!!CALL DDOM_SOLVER(CDON1(I),C2TEMP,CDON1TM1,WC_CDON1(I,KBM1),DD_Z, ALPHA, DT, JinCDON1)
+
+!!     JWCDON1(I) = -DD*(WC_CDON1(I,KBM1) - CDON1(I))
+!!		  
+!!	 ALPHA = (-XKDON2 - W2_Z - DD_Z-temp_absN) 		 
+!!CALL DDOM_SOLVER(CDON2(I),C2TEMP,CDON2TM1,WC_CDON2(I,KBM1),DD_Z, ALPHA, DT,  JinCDON2)		  
+
+!!     JWCDON2(I) = -DD*(WC_CDON2(I,KBM1) - CDON2(I))
+!!			 
+!!	 ALPHA = (-XKDON3 - W2_Z - DD_Z-temp_absN) 	 
+!! CALL DDOM_SOLVER(CDON3(I),C2TEMP,CDON3TM1,WC_CDON3(I,KBM1),DD_Z, ALPHA, DT, JinCDON3)	
+!! 
+!!     JWCDON3(I) = -DD*(WC_CDON3(I,KBM1) - CDON3(I))
+!! 
+!!!!!****NON COLORED NITROGEN
+!!			  
+!!	 ALPHA = (-XKDON1 - W2_Z - DD_Z-temp_absN) 	
+!! CALL DDOM_SOLVER(NCDON1(I),C2TEMP,NCDON1TM1,WC_NCDON1(I,KBM1),DD_Z, ALPHA, DT, JinNCDON1)	
+!! 
+!!     JWNCDON1(I) = -DD*(WC_NCDON1(I,KBM1) - NCDON1(I))
+!! 
+!!	 ALPHA = (-XKDON2 - W2_Z - DD_Z-temp_absN) 	 
+!! CALL DDOM_SOLVER(NCDON2(I),C2TEMP,NCDON2TM1,WC_NCDON2(I,KBM1),DD_Z, ALPHA, DT,JinNCDON2)		  
+
+!!	 JWNCDON2(I) = -DD*(WC_NCDON2(I,KBM1) - NCDON2(I))
+!!			 
+!!	 ALPHA = (-XKDON3 - W2_Z - DD_Z-temp_absN) 	
+!!CALL DDOM_SOLVER(NCDON3(I),C2TEMP,NCDON3TM1,WC_NCDON3(I,KBM1),DD_Z, ALPHA, DT,JinNCDON3)	
+
+!!     JWNCDON3(I) = -DD*(WC_NCDON3(I,KBM1) - NCDON3(I))
+
+!!!!***COLORED PHOSPHORUS
+!	 
+!	 ALPHA = (-XKDOP1 - W2_Z - DD_Z) 	
+! CALL DDOM_SOLVER(CDOP1(I) ,C2TEMP,CDOP1TM1,WC_CDOP1(I,KBM1),DD_Z, ALPHA, DT,JinCDOP1)		  
+
+!     JWCDOP1(I) = -DD*(WC_CDOP1(I,KBM1) - CDOP1(I))
+
+!	 ALPHA = (-XKDOP2 - W2_Z - DD_Z) 	
+!CALL DDOM_SOLVER(CDOP2(I),C2TEMP,CDOP2TM1,WC_CDOP2(I,KBM1),DD_Z, ALPHA, DT, JinCDOP2)	
+
+!	 JWCDOP2(I) = -DD*(WC_CDOP2(I,KBM1) - CDOP2(I))
+!		 
+!	 ALPHA = (-XKDOP3 - W2_Z - DD_Z) 	
+!CALL DDOM_SOLVER(CDOP3(I),C2TEMP,CDOP3TM1,WC_CDOP3(I,KBM1),DD_Z, ALPHA, DT,  JinCDOP3)
+
+!	 JWCDOP3(I) = -DD*(WC_CDOP3(I,KBM1) - CDOP3(I))
+
+!!!!****NON COLORED PHOSPHORUS
+!	 
+!	 ALPHA = (-XKDOP1 - W2_Z - DD_Z) 	
+! CALL DDOM_SOLVER(NCDOP1(I),C2TEMP,NCDOP1TM1,WC_NCDOP1(I,KBM1),DD_Z, ALPHA, DT, JinNCDOP1)		  
+!	 
+!	 JWNCDOP1(I) = -DD*(WC_NCDOP1(I,KBM1) - NCDOP1(I))
+!		  
+!	 ALPHA = (-XKDOP2 - W2_Z - DD_Z) 	
+!CALL DDOM_SOLVER(NCDOP2(I),C2TEMP,NCDOP2TM1,WC_NCDOP2(I,KBM1),DD_Z, ALPHA, DT, JinNCDOP2)		  
+
+!	 JWNCDOP2(I) = -DD*(WC_NCDOP2(I,KBM1) - NCDOP2(I))
+
+!	 ALPHA = (-XKDOP3 - W2_Z - DD_Z) 	
+!CALL DDOM_SOLVER(NCDOP3(I),C2TEMP,NCDOP3TM1,WC_NCDOP3(I,KBM1),DD_Z, ALPHA, DT, JinNCDOP3)	
+
+!     JWNCDOP3(I) = -DD*(WC_NCDOP3(I,KBM1) - NCDOP3(I))   ! PASS THE FLUX TO THE WATER COLUMN
 
 
 !!********************** END UPDATE CONCENTRATION ***********************
@@ -1603,13 +1957,30 @@ CALL DDOM_SOLVER(NCDOP3(I),C2TEMP,NCDOP3TM1,WC_NCDOP3(I,KBM1),DD_Z, ALPHA, DT, J
 !!************************** FLUX CALCULATION ***************************
 
 !The diagenetic flux, we pass out MARSH_JDOCX_OUT to the sediment moduel to get the 	
+!*************** layer 1 Aerobic Layer ammonium flux (no carbon flux in aerobic layer in model)
 
+!NITROGEN
+
+	JDIAGDON1 = XKDON1 * (CDON11TM1 + NCDON11TM1)  !pass to G1 nitrogen diagenesis in layer 1 mg N m^-3 d^-1
+	JDIAGDON2 = XKDON2 * (CDON21TM1 + NCDON21TM1) !pass to G2 nitrogen diagenesis
+	JDIAGDON3 = XKDON3 * (CDON31TM1 + NCDON31TM1)   !pass to G3 nitrogen diagenesis
+
+	JDONX_OUT1(I)=JDIAGDON1+JDIAGDON2+JDIAGDON3 ! this goes to mod_sed (g N/m^2/day)
+	
+	JDIAGDOC1 = XKDOC1 * (CDOC1TM1 + NCDOC1TM1)  !pass to G1 carbon diagenesis
+	JDIAGDOC2 = XKDOC2 * (CDOC2TM1 + NCDOC2TM1)  !pass to G2 carbon diagenesis
+	JDIAGDOC3 = XKDOC3 * (CDOC3TM1 + NCDOC3TM1)   !pass to G3 carbon diagenesis
+
+	JDOCX_OUT1(I)=JDIAGDOC1+JDIAGDOC2+JDIAGDOC3 ! this goes to mod_sed (g C/m^2/day)
+
+		
+!************ Layer 2 Anaerobic Layer	
 !CARBON
 	JDIAGDOC1 = XKDOC1 * (CDOC1TM1 + NCDOC1TM1) * ZSED(I)  !pass to G1 carbon diagenesis
 	JDIAGDOC2 = XKDOC2 * (CDOC2TM1 + NCDOC2TM1) * ZSED(I)  !pass to G2 carbon diagenesis
 	JDIAGDOC3 = XKDOC3 * (CDOC3TM1 + NCDOC3TM1) * ZSED(I)  !pass to G3 carbon diagenesis
 
-	JDOCX_OUT(I)=JDIAGDOC1+JDIAGDOC2+JDIAGDOC3 ! this goes to mod_sed (g C/m^2/day)
+	JDOCX_OUT2(I)=JDIAGDOC1+JDIAGDOC2+JDIAGDOC3 ! this goes to mod_sed (g C/m^2/day)
 
 !NITROGEN
 
@@ -1617,7 +1988,7 @@ CALL DDOM_SOLVER(NCDOP3(I),C2TEMP,NCDOP3TM1,WC_NCDOP3(I,KBM1),DD_Z, ALPHA, DT, J
 	JDIAGDON2 = XKDON2 * (CDON2TM1 + NCDON2TM1) * ZSED(I)  !pass to G2 nitrogen diagenesis
 	JDIAGDON3 = XKDON3 * (CDON3TM1 + NCDON3TM1) * ZSED(I)  !pass to G3 nitrogen diagenesis
 
-	JDONX_OUT(I)=JDIAGDON1+JDIAGDON2+JDIAGDON3 ! this goes to mod_sed (g N/m^2/day)
+	JDONX_OUT2(I)=JDIAGDON1+JDIAGDON2+JDIAGDON3 ! this goes to mod_sed (g N/m^2/day)	
 
 !PHOSPHORUS
 
@@ -1634,10 +2005,13 @@ ENDDO
 
 
    ! UPDATE THE SHARED ARRAYS FOR PASSING TO THE BIG SEDIMENT MODULE
-
-	JDOCX_SHARE = JDOCX_OUT    !Diagenesis DOC flux  (g C/m^2)
-    JDONX_SHARE = JDONX_OUT	   !Diagenesis DON flux
-	JDOPX_SHARE = JDOPX_OUT    !Diagenesis DOP flux
+! Take note of unit difference between layer 1 and layer 2
+! Layer 1 is depth integrated in mod_sed with the depth of the aerobic layer
+	JDOCX_SHARE1 = JDOCX_OUT1    !Diagenesis DOC flux  (g C m^-2 d^-1)
+	JDOCX_SHARE2 = JDOCX_OUT2    !Diagenesis DOC flux  (g C m^-2 d^-1)
+    JDONX_SHARE1 = JDONX_OUT1	   !Diagenesis DON flux layer 1 (g N m^-3 d-1
+    JDONX_SHARE2 = JDONX_OUT2	   !Diagenesis DON flux (g N m-2 d^-1)
+	JDOPX_SHARE = JDOPX_OUT    !Diagenesis DOP flux (g P m^-2 d^-1_
 
 END SUBROUTINE SED_DOM_CALC
 
@@ -1645,7 +2019,7 @@ END SUBROUTINE SED_DOM_CALC
 
 !*************************DDOM SOLVER ******************************
 
-SUBROUTINE DDOM_SOLVER(C1,C2,C1TM1,C2TM1,DD,CC1,DT_IN,J_IN)
+SUBROUTINE DDOM_SOLVER(C1,C2,C1TM1,C2TM1,CC1,CC2,DD,DT_IN,J_IN1, J_IN2)
  use mod_prec, only: SP
 IMPLICIT none
 
@@ -1653,30 +2027,46 @@ IMPLICIT none
   !initially start with a constant diffusion rate (non- temperature dependent) and a
   ! formulation that doesn't factor in porosity of the sediments
 
-   REAL(SP), INTENT(OUT) :: C1, C2 ! concentrations(t+dt) of sediment(1) and water(2)
-   REAL(SP), INTENT(IN)  :: C1TM1, C2TM1  !concentrations of sediment(1) and water(2) at the previous time step
-   REAL(SP), INTENT(IN)	 :: J_IN ! flux into the seds from outside sources (plants...), g /m^3/day,
+   REAL(SP), INTENT(OUT) :: C1, C2 ! concentrations(t+dt) of sediment(2) and sediment(1)
+   REAL(SP), INTENT(IN)  :: C1TM1, C2TM1  !concentrations of sediment(2) and sediment(1) at the previous time step
+   REAL(SP), INTENT(IN)	 :: J_IN1, J_IN2 ! flux into the seds from outside sources in layer 1 and layer 2 (plants, OLW...), g /m^3/day,
    REAL(SP), INTENT(IN)  :: DT_IN ! The time step, days
    
-   REAL(SP)         	 :: TDOC_IN ! flux from plants plus the DOC from the previous time step
-   REAL(SP) :: CC1 ! coefficients for sediment layer concentration
-   REAL(SP) :: DD  ! diffusion rate 1/day         
+   REAL(SP) :: TDOC_IN1, &  ! flux into layer 1 from plant input and diffusion from overlying water column, 
+								!g /m^3/d, + DOC from previous time step
+				
+				TDOC_IN2 ! flux from plants plus the DOC from the previous time step
+				
+   REAL(SP) :: CC1,CC2 ! reaction coefficients for sediment layer 1 and 2 concentration
+   REAL(SP) :: DD  ! diffusion rate between layer 1 and lyaer 2 (1/d) = D/(Hsed^2)       
 
    REAL(SP)	::   GAMMA    ! Gamma = Determinant of systems of equations,used to find A^-1 and solve
    REAL(SP) :: A11, A12, A21, A22  ! matrix coefficients
 
-   A11 = 1 - CC1*DT_IN       ! time integrate everything
-   A12 = -DD*DT_IN
-   A21= -DD*DT_in
-   A22 = 1 + DD*DT_IN
+   A11 =  1 - CC1*DT_IN       ! time integrate everything
+   A12 = - DD*DT_IN
+   A21=  - DD*DT_in
+   A22 = 1  - CC2*DT_IN
    
-   TDOC_IN = J_IN*DT_IN+C1TM1! the total DOC into the solver from previous step and outside fluxes
+   TDOC_IN1 = J_IN1*DT_IN + C1TM1! the total DOC into the solver from previous step and outside fluxes
+   TDOC_IN2 = J_IN2*DT_IN + C2TM1! the total DOC into the solver from previous step and outside fluxes
 
    GAMMA = A11*A22 - A12*A21  ! the determinant
    
-   C1=(A22*TDOC_IN - A12*C2TM1 )/GAMMA   
+   C1 = (TDOC_IN1 * A22  -  TDOC_IN2 * A12 ) / GAMMA    ! = Flux into layer 1 * A11  - 
 
-   C2=(-A21*TDOC_IN + A11*C2TM1)/GAMMA
+   C2 = (- A21 * TDOC_IN1 + A11 * TDOC_IN2) / GAMMA
+   
+   !  write(*,*)'C2tm1 in solver = ',C2TM1
+   ! write(*,*)'C1tm1 in solver = ',C1TM1
+!	
+!	write(*,*) 'A21 = ',A21
+!	write(*,*) 'TDOC_In = ',TDOC_in1
+!	write(*,*) 'A11 = ',A11
+!	write(*,*)  'C2TM1 = ',C2TM1
+!	write(*,*)  'GAMMA = ',GAMMA
+   !write(*,*) ' C2 in solver  = ',C2
+   !write(*,*) ' C1 in solver  = ',C1
 
 END SUBROUTINE DDOM_SOLVER
 

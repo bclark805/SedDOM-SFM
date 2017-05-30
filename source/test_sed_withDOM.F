@@ -199,7 +199,12 @@ PROGRAM TEST_SED	!program for testing mod_sed.F of the fvcom-icm model.
 				      CDON1,CDON2,CDON3,      &
 					  NCDON1,NCDON2,NCDON3,    &
 					  CDOP1,CDOP2,CDOP3,      &
-					  NCDOP1,NCDOP2,NCDOP3, GET_ZHTA
+					  NCDOP1,NCDOP2,NCDOP3, GET_ZHTA,  &
+					  CDOC11,CDOC21,CDOC31,  &
+					  NCDOC11,NCDOC21,NCDOC31,    &
+				      CDON11,CDON21,CDON31,      &
+					  NCDON11,NCDON21,NCDON31
+
     USE MOD_SED_DOM_EXCHANGE
     USE WC_DOM, ONLY: WC_DOM_ALLOCATE, WC_DOM_DEALLOCATE,&!
 			WC_CDOC1 ,&!
@@ -318,7 +323,7 @@ read(*,*)OLW_DOM
 		ALLOCATE(H(MLOC)); H=1.
 		
 		ART1=100.d0  !100m^2
-		D=2.0		 !2m deep
+		D=1.0		 !2m deep
 		DZ=1.0/KBM1  !0.1 as KBM1=10  !sigma layer 
 	 
 	!
@@ -904,19 +909,19 @@ read(*,*)OLW_DOM
 				KPON1 = 0.01
 				
 				KPON2=0.0018	!1/d
-				KPON3=0.00000     	!1/d
+				KPON3=0.000005     	!1/d
 				
 			!    KPOC1=0.035  	!1/d
 				KPOC1=0.01	!1/d
 				
 				KPOC2=0.0018	!1/d
-				KPOC3=0.00000    	!1/d
+				KPOC3=0.000005    	!1/d
 				
 				!KPOP1=0.035  	!1/d
 			    KPOP1=0.01  	!1/d
 				
 				KPOP2=0.0018 	!1/d
-				KPOP3=0.00000     	!1/d
+				KPOP3=0.000005     	!1/d
 
 !Temperature coefficients for G class 1, 2, and 3 mineralization			
 
@@ -1105,7 +1110,7 @@ read(*,*)OLW_DOM
 		   
 		   PO41TI=  1000*0.077			!mgP/m^3		!Excel only
 		   PO4T2I=1000*0.293/FD2		!converted to total value 
-		   
+
 		   IF(O20>O2CRITSI)THEN
 				PIE1=PIE2SI*DPIE1SI
 		   ELSE
@@ -1296,28 +1301,68 @@ read(*,*)OLW_DOM
 						
 			!ENDDO	
 			ENDIF
+!!! R-64 Mean forcing			
+			WC_CDOC1 =0.2529  ! 20 % labile
+			WC_NCDOC1 = 0.2529
+			
+			WC_CDON1 = 0.0325
+			WC_NCDON1 =0.0325		
+			
+			WC_CDOC2 = 0.3794    ! 30 % semi-labile
+			WC_NCDOC2 = 0.3794
+			
+			WC_CDON2 = 0.0488
+			WC_NCDON2 = 0.0488  ! 50 % refractory
 			
 			
-			!WC_CDOC1 = WC_CDOC1!*0.1;
-			!WC_NCDOC1 = WC_NCDOC1!*0.1;
+			WC_CDOC3 = 0.6323
+			WC_NCDOC3 = 0.6323
 			
-			!WC_CDON1 = WC_CDON1!*0.1;
-			!WC_NCDON1 = WC_NCDON1!*0.1;			
-			
-			!WC_CDOC2 = WC_CDOC2!*0.1;
-			!WC_NCDOC2 = WC_NCDOC2!*0.1;
-			
-			!WC_CDON2 = WC_CDON2*!0.1;
-			!WC_NCDON2 = WC_NCDON2!*0.1;	
-			
-			
-			!WC_CDOC3 = WC_CDOC3!*0.1;
-			!WC_NCDOC3 = WC_NCDOC3!*0.1;
-			
-			!WC_CDON3 = WC_CDON3!*0.1;
-			!WC_NCDON3 = WC_NCDON3!*0.1;	
-			
-			!WRITE(*,*)WC_CDOC1,WC_CDOC2,WC_CDOC3,WC_NCDOC1,WC_NCDOC2,WC_NCDOC3, &
+			WC_CDON3 = 0.0813	
+			WC_NCDON3 = 0.0813	
+!!!!			
+ !!Point no Point Mean forcing			
+!			WC_CDOC1 = 0.2367
+!			WC_NCDOC1 = 0.2367
+!			
+!			WC_CDON1 = 0.0314
+!			WC_NCDON1 =0.0314		
+!			
+!			WC_CDOC2 = 0.355
+!			WC_NCDOC2 = 0.355
+!			
+!			WC_CDON2 = 0.0471
+!			WC_NCDON2 = 0.0471
+!			
+!			
+!			WC_CDOC3 = 0.5917
+!			WC_NCDOC3 = 0.5917
+!			
+!			WC_CDON3 = 0.0785	
+!			WC_NCDON3 = 0.0785	
+!						
+
+!! Ragged Point Mean forcing			
+!			WC_CDOC1 = 0.273
+!			WC_NCDOC1 = 0.273
+!			
+!			WC_CDON1 = 0.0328
+!			WC_NCDON1 =0.0328		
+!			
+!			WC_CDOC2 = 0.41
+!			WC_NCDOC2 = 0.41
+!			
+!			WC_CDON2 = 0.0492
+!			WC_NCDON2 = 0.0492
+!			
+!			
+!			WC_CDOC3 = 0.683
+!			WC_NCDOC3 = 0.683
+!			
+!			WC_CDON3 = 0.082	
+!			WC_NCDON3 = 0.082	
+!			
+	!WRITE(*,*)WC_CDOC1,WC_CDOC2,WC_CDOC3,WC_NCDOC1,WC_NCDOC2,WC_NCDOC3, &
 			!			WC_CDON1,WC_CDON2,WC_CDON3,WC_NCDON1,WC_NCDON2,WC_NCDON3
 			
 			!set Overlying water colum concentrations according to the values read fromt the file
@@ -1353,14 +1398,26 @@ read(*,*)OLW_DOM
 				!missing SO40	~set to SO40MG*0.65306122 in mod_sed
 				!missing HS0 	~set to COD(I,KWC) in mod_sed.F and COD is given zero above
 			ENDDO
-			
-			
-				WC_CDOP1 = WC_CDON1*0.01
-				WC_CDOP2 = WC_CDON2*0.01
-				WC_CDOP3 = WC_CDON3*0.01
-				WC_NCDOP1 = WC_NCDON1*0.01
-				WC_NCDOP2 = WC_NCDON2*0.01
-				WC_NCDOP3 = WC_NCDON3*0.01
+				!WC_CDOC1 = 1!WC_CDON1*0.01
+				!WC_CDOC2 = 1!WC_CDON2*0.01
+				!WC_CDOC3 = 1!WC_CDON3*0.01
+				!WC_NCDOC1 = 1! WC_NCDON1*0.01
+				!WC_NCDOC2 = 1!WC_NCDON2*0.01
+				!WC_NCDOC3 = 1!WC_NCDON3*0.01	
+				
+			!	WC_CDON1 = WC_CDON1*0.1
+			!!	WC_CDON2 =  !WC_CDON2*0.01
+			!!	WC_CDON3 =  !WC_CDON3*0.01
+			!	WC_NCDON1 = WC_NCDON1*0.1
+			!	WC_NCDON2 = .1!WC_NCDON2*0.01
+			!	WC_NCDON3 = .1!WC_NCDON3*0.01
+				
+				!WC_CDOP1 = 1!WC_CDON1*0.01
+				!WC_CDOP2 = 1!WC_CDON2*0.01
+				!WC_CDOP3 = 1!WC_CDON3*0.01
+				!WC_NCDOP1 = 1!WC_NCDON1*0.01
+				!WC_NCDOP2 = 1!WC_NCDON2*0.01
+				!WC_NCDOP3 = 1!WC_NCDON3*0.01
 			
 		ENDIF
 		
@@ -1376,6 +1433,7 @@ read(*,*)OLW_DOM
                 JPOS(I) = JPOSaccum(I)
                 ENDDO
 
+				
 		CALL SED_CALC(.FALSE.) !calculate with time variable formulation
 
                !set accumulative fluxes back to zero
@@ -1555,13 +1613,16 @@ read(*,*)OLW_DOM
 			!CALL SED_DOM_OUTPUT
 		! Added by bclark manually write outputs for sediment DOM
 	  !concs
-		WRITE(33,400)CDOC1,CDOC2,CDOC3,  &
-					  NCDOC1,NCDOC2,NCDOC3,    &
-				      CDON1,CDON2,CDON3,      &
-					  NCDON1,NCDON2,NCDON3,    &
-					  CDOP1,CDOP2,CDOP3,      &
-					  NCDOP1,NCDOP2,NCDOP3,JCX,JNX
-		!Flux			  
+		WRITE(33,400)CDOC1,CDOC2,CDOC3,  &!
+					  NCDOC1,NCDOC2,NCDOC3,    &!
+				      CDON1,CDON2,CDON3,      &!
+					  NCDON1,NCDON2,NCDON3,    &!					  
+						CDOC11,CDOC21,CDOC31,  &
+					  NCDOC11,NCDOC21,NCDOC31,    &
+				      CDON11,CDON21,CDON31,      &
+					  NCDON11,NCDON21,NCDON31,    &
+					   JCX, JNX  
+					  
 		WRITE(355,401)JWCDOC1,JWCDOC2,JWCDOC3,   &
 					  JWNCDOC1,JWNCDOC2,JWNCDOC3,    &
 				      JWCDON1,JWCDON2,JWCDON3,   &
@@ -1593,7 +1654,7 @@ read(*,*)OLW_DOM
 	!ENDDO
 	
  ENDDO	
-		400 format (20(F16.8))
+		400 format (26(F16.8))
 		401 format (18(F16.8))
 	!
 	!close files
