@@ -81,7 +81,7 @@ blah blah
          10.0000 20.0000 30.0640 -40.011
 blah blah
 WCL FILE..WCLFN....list all files one file per line(colum 9 to column 80)......
-          inputs/PNPT_OLW_forcing_fluxDO.dat 
+          inputs/R64_OLW_forcing_fluxDO.dat 
 blah blah
           SPVARS  PRINTS
         CONSTANT      NO

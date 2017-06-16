@@ -280,8 +280,7 @@ PROGRAM TEST_SED	!program for testing mod_sed.F of the fvcom-icm model.
     !initialize the variables used in the sediment module in the upper
     !modules
 	!
-write(*,*)'What is the overlying water column DOM file'
-read(*,*)OLW_DOM
+
 	!disable SAV, BA, DF, SF
 	SAV_CALC =.FALSE.
 	BALGAE_CALC = .FALSE.
@@ -406,6 +405,11 @@ read(*,*)OLW_DOM
 
     SED_DOM_FLAG = SED_DOM
 	    write(*,*)'Seddom Flag = ',SED_DOM_FLAG
+    IF(SED_DOM_FLAG) THEN
+	   write(*,*)'What is the overlying water column DOM file'
+		read(*,*)OLW_DOM
+		 OPEN(unit=23,file="inputs/"//OLW_DOM)
+	ENDIF
 	  
    ! IF(SED_DOM_FLAG) THEN
 	  
@@ -416,8 +420,6 @@ read(*,*)OLW_DOM
 		
 		
 		! Used to use a constant value for OLW DOM, now can force with a time series
-		
-		OPEN(unit=23,file="inputs/"//OLW_DOM)
 
 		!WC_CDOC1 = 1
 		!WC_CDOC2 = 1
@@ -1294,11 +1296,11 @@ read(*,*)OLW_DOM
 			IF(JDAY>=NXJDAY) THEN
 			
 			     CALL SEDTEST_UPDATE_WATERCOLUMN(NXJDAY)	!read overlying water column concentration etc
-				 
+		IF(SED_DOM_FLAG) THEN		 
 			!DO K = 1,KBM1	! Want to read in the time variable OLW DOM values also
 		      READ(23,*)WC_CDOC1(I,KBM1),WC_CDOC2(I,KBM1),WC_CDOC3(I,KBM1),WC_NCDOC1(I,KBM1),WC_NCDOC2(I,KBM1),WC_NCDOC3(I,KBM1), &
 						WC_CDON1(I,KBM1),WC_CDON2(I,KBM1),WC_CDON3(I,KBM1),WC_NCDON1(I,KBM1),WC_NCDON2(I,KBM1),WC_NCDON3(I,KBM1)
-						
+		ENDIF				
 			!ENDDO	
 			ENDIF
 !!! R-64 Mean forcing			
@@ -1320,7 +1322,7 @@ read(*,*)OLW_DOM
 			
 			WC_CDON3 = 0.0813	
 			WC_NCDON3 = 0.0813	
-!!!!			
+!!!			
  !!Point no Point Mean forcing			
 !			WC_CDOC1 = 0.2367
 !			WC_NCDOC1 = 0.2367

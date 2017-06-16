@@ -18,13 +18,13 @@ thetaDOC1   thetaDOC2   thetaDOC3
 1.100       1.1500       1.2000
 DOC CONTROL PARAMETERS for base Reaction rate (1/day)
 KDOC1       KDOC2        KDOC3
-0.500       0.0300       0.0000     
-DON CONTROL PARAMETERS for Temperature Dependence
+0.350       0.0150       0.0000     
+DOC CONTROL PARAMETERS for Temperature Dependence
 thetaDON1   thetaDON2   thetaDON3
 1.100       1.1500       1.2000
 DOC CONTROL PARAMETERS for base Reaction rate (1/day)
 KDON1       KDON2        KDON3
-0.500       0.0600        0.0000       
+0.400       0.0300        0.0000      
 DOP CONTROL PARAMETERS for Temperature Dependence
 thetaDOP1   thetaDOP2   thetaDOP3
 1.1000      1.1500       1.2000

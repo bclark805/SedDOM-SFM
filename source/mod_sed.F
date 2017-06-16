@@ -659,7 +659,8 @@ USE MOD_HYDROVARS, ONLY:   &
 		JDOCX_SHARE2, &
 	    JDONX_SHARE1, &
 	    JDONX_SHARE2, &
-	    JDOPX_SHARE, &
+	    JDOPX_SHARE1, &
+		    JDOPX_SHARE2, &
 		SED_TEMP_SHARE,   &
 		ZSED_SHARE,   &
 		W2_SHARE,   &
@@ -1052,8 +1053,8 @@ USE MOD_HYDROVARS, ONLY:   &
   REAL(SP) ::         JNX,           & !depth integrated PON diagenesis rate (mgN/m^2/day)
 					JNX_Layer1,           & !depth integrated PON diagenesis rate (mgN/m^2/day) in layer 1 from DON  B Clark APril 2017
                     JCX,           & !depth integrated POC diagenesis rate (mgC/m^2/day)
-                    JPX              !depth integrated POP diagenesis rate (mgP/m^2/day)
-
+                    JPX    ,   &           !depth integrated POP diagenesis rate (mgP/m^2/day)
+					JPX_LAYER1             !depth integrated POP diagenesis rate (mgP/m^2/day) from DOP remin in layer 1
   
   REAL(SP) ::         XJCNO3,        & !Sulfide/methhane oxidation flux due to NO3 used in denitrifcation  (gO2/m^2/d)
                     XJCNO31,         &  !Sulfide/methhane oxidation flux due to NO3 used in denitrifcation  (gO2/m^2/d) in layer 1
@@ -4723,16 +4724,17 @@ IF(HYDRO_FLAG .AND. SED_DOM) THEN
     ! write(*,*)'JDOC = ',JDOCX_SHARE(I) 
 	  JCX=JDOCX_SHARE2(I)*1000    ! B Clark convert from g/m^2/day to mg/m^2/day
 	  JNX=JDONX_SHARE2(I)*1000
-	  JPX=JDOPX_SHARE(I)*1000
+	  JPX=JDOPX_SHARE2(I)*1000
 						  
 	! Layer 1 input of DON remineralization to Layer 1 NH4 					  
      JNX_LAYER1 =  JDONX_SHARE1(I)*HSED1(I)*1000  ! g N m^-3 d * depth of layer 1 (m) * 1000 mg g^-1
 		
-	write(*,*)'JCX before layer 1',JCX									 
+!	 write(*,*)'JCX before layer 1',JCX									 
 										 ! ----> mg N m^-2 d^-1     
-	  JCX = JCX+JDOCX_SHARE1(I)*HSED1(I)*1000
+	  JCX = JCX+JDOCX_SHARE1(I)*HSED1(I)*1000  !JCX only goes to SOD
+	    JPX_LAYER1 =  JDOPX_SHARE1(I)*HSED1(I)*1000  ! g P m^-3 d * depth of layer 1 (m) * 1000 mg g^-1
 									  
-	 write(*,*)'JCX after layer 1',JCX
+!	 write(*,*)'JCX after layer 1',JCX
 ELSE
 #endif
      JCX = XKPOC1*POC1+XKPOC2*POC2+XKPOC3*POC3    !WLong notes (2-7)               (m/d * mgC/m^3  ==> mgC/m^2/day)
@@ -4745,13 +4747,14 @@ ELSE
 	  
 	  JCX=JCX+JDOCX_SHARE2(I)*1000    ! B Clark convert from g/m^2/day to mg/m^2/day
 	  JNX=JNX+JDONX_SHARE2(I)*1000
-	  JPX=JPX+JDOPX_SHARE(I)*1000
+	  JPX=JPX+JDOPX_SHARE2(I)*1000
 !	write(*,*)'JCX in 2  = ',JCX  
 						  
 	! Layer 1 input of DON remineralization to Layer 1 NH4 					  
-     JNX_LAYER1 =  JDONX_SHARE1(I)*HSED1(I)*1000  ! g N m^-3 d * depth of layer 1 (m) * 1000 mg g^-1
-											 ! ----> mg N m^-2 d^-1     
-	  JCX = JCX+JDOCX_SHARE1(I)*HSED1(I)*1000
+      JNX_LAYER1 =  JDONX_SHARE1(I)*HSED1(I)*1000  ! g N m^-3 d * depth of layer 1 (m) * 1000 mg g^-1
+	  JPX_LAYER1 =  JDOPX_SHARE1(I)*HSED1(I)*1000  ! g P m^-3 d * depth of layer 1 (m) * 1000 mg g^-1										 ! ----> mg N m^-2 d^-1     
+  	  JCX = JCX+JDOCX_SHARE1(I)*HSED1(I)*1000
+	  
 	ENDIF
 	
 ENDIF
@@ -5192,7 +5195,10 @@ ENDIF
      K2H2P = 0.
      
     
-     J1    = S*PO40
+     J1    = S*PO40 
+#if defined(SEDIMENT_DOM)	 
+	 J1 = J1 + JPX_LAYER1! add in DOP layer 1 remineralizatoin flux
+#endif
      K3    = 0.
      
      PF    = KADPO4*SSI(I,KWC)/(1.+KADPO4*SSI(I,KWC))
@@ -5784,11 +5790,11 @@ ENDIF
    
  #if defined(SEDIMENT_DOM) 
    ! Potentially at in NH4 flux from DON remineralization in layer 1
-   write(*,*)' J1 before = ',J1
+  ! write(*,*)' J1 before = ',J1
    
    J1 = J1 + JNX_LAYER1
    
-   write(*,*)' J1 after = ',J1
+ !  write(*,*)' J1 after = ',J1
    
  #endif  
    
@@ -7825,7 +7831,7 @@ D_R2 = 1.0
       
 	  JCIN_R2 = JCIN_R2!0.04*12*2.667 !JCIN_R2*2   ! B Clark use a constant flux
 								! 40 mmol/m^2/day (Brady et al., 2013) * 12 mg C/ mmol C *2.667 mg O2/ mg C
-      JNIN_R2 = JNIN_R2*7.3/6.625!0.04*12/6.625!JNIN_R2*2  !  &!N OM flux
+      JNIN_R2 = JNIN_R2!*7.3/6.625!0.04*12/6.625!JNIN_R2*2  !  &!N OM flux
       JPIN_R2 = JPIN_R2!0.04*12/41!JPIN_R2*2  !  &!P OM flux
       JSIN_R2 = JSIN_R2!0.04*12/45.3!JSIN_R2*2    !&!Si OM flux
 	  
