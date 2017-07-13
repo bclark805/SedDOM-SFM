@@ -7790,7 +7790,7 @@ ENDIF
 
         !read in a new record, if end of file, jump to 134 and open next file
         
-        READ (WCL,1010,END=134) NXWCL,        &!jday of next record
+        READ (WCL,*,END=134) NXWCL,        &!jday of next record
                                 JCIN_R2,    &!C OM flux
                                 JNIN_R2,    &!N OM flux
                                 JPIN_R2,    &!P OM flux
@@ -7853,7 +7853,7 @@ D_R2 = 1.0
       OPEN (WCL,FILE=WCLFN(WCLPTR),STATUS='OLD')
       
         READ (WCL,1000)         !Read past the header lines
-        READ (WCL,1010,END=134) NXWCL,        &!jday of next record
+        READ (WCL,*,END=134) NXWCL,        &!jday of next record
                                 JCIN_R2,    &!C OM flux
                                 JNIN_R2,    &!N OM flux
                                 JPIN_R2,    &!P OM flux
