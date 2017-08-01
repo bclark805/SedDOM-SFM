@@ -1,0 +1,7 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Tue Aug  1 10:57:56 2017
+        MODULE PDOMDEC__genmod
+          INTERFACE 
+            SUBROUTINE PDOMDEC
+            END SUBROUTINE PDOMDEC
+          END INTERFACE 
+        END MODULE PDOMDEC__genmod

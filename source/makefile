@@ -42,10 +42,8 @@
 #	       PARLIB = -L/Users/bclark/Desktop/metis -lmetis
 
                
-                FLAG_1 = -Dtest2c
 
 		FLAG_3 = -DSEDIMENT_DOM
-		FLAG_4 = -DPHOTODEGRADATION
 
 #--------------------------------------------------------------------------
 #        NETCDF OUTPUT      DUMP OUTPUT INTO NETCDF FILES (yes/no)
@@ -85,7 +83,7 @@
           CPPFLAGS = $(DEF_FLAGS) -DINTEL -DDOUBLE_PRECISION
  #         FC       = /usr/local/mpich2/bin/mpif90
 	   FC     = ifort  
-         DEBFLGS  = -r8 -warn all -i4 -g -Wl -no_pie -nozero -O0  -check all -g -debug -debug-parameters -fp-stack-check -fpe0 -traceback -automatic  #-ftrapuv
+         DEBFLGS  = -r8 -warn all -i4 -g -Wl -no_pie -nozero -O0  -check all -g -debug -debug-parameters -fp-stack-check -fpe0 -traceback -automatic  #-ftrapuv 
           OPT      = -heap-arrays  -i4  -Wl -no_pie -vec-report0 -r8 -xHost -no-prec-div  -no-prec-sqrt -assume nominus0 -assume noprotect_parens -assume norealloc_lhs  -shared-intel -warn unused -check uninit #  -p -g  -fno-inline-functions
           CLIB     = #-static-libcxa 
 #--------------------------------------------------------------------------
@@ -116,7 +114,7 @@
 #--------------------------------------------------------------------------
 #  CAT Preprocessing Flags
 #--------------------------------------------------------------------------
-           CPPARGS = $(CPPFLAGS) $(DEF_FLAGS) $(FLAG_1) $(FLAG_2) $(FLAG_3) $(FLAG_4) 
+           CPPARGS = $(CPPFLAGS) $(DEF_FLAGS) $(FLAG_2) $(FLAG_3) 
 #--------------------------------------------------------------------------
 #  Libraries           
 #--------------------------------------------------------------------------
@@ -130,34 +128,33 @@
 #--------------------------------------------------------------------------
 #  Preprocessing and Compilation Directives
 #--------------------------------------------------------------------------
-.SUFFIXES: .o .f90 .F .F90 
+.SUFFIXES:  .f90   
 
-.F.o:
-	$(CPP) $(CPPARGS) $(INCS) $*.F > $*.f90
+#.F.o:
+#	$(CPP) $(CPPARGS) $(INCS) $*.F > $*.f90
 	$(FC)  -c $(FFLAGS) $(INCS) $*.f90
-	\rm $*.f90 
-#	\rm $*.o
+#	\rm $*.f90
 
 #--------------------------------------------------------------------------
 #  FVCOM Source Code.
 #--------------------------------------------------------------------------
 
-MAIN  = mod_prec.F	mod_types.F	mod_utils.F	mod_control.F	\
-	mod_lims.F	mod_bcs.F	mod_sizes.F	mod_hydrovars.F	\
-	mod_buffers.F 	mod_fileinfo.F	       \
-	mod_wqm.F	mod_zoop.F	mod_wqminit.F\
-	utilities.F	mod_par.F	mod_sed_sav_exchange_vars.F	\
-	bracket.F	mod_sed_sf_exchange_vars.F	mod_sf.F	\
-	mod_sed_df_exchange_vars.F	mod_df.F	    \
-	mod_sed_dom_exchange.F          mod_sed_dom.F   mod_owq.F	 \
-	mod_sav.F	mod_ba.F	mod_sed.F	mod_algal.F	\
-	mod_bcmap.F	mod_obcs.F	mod_ncd.F	ncdio.F		\
-	mod_tge.F	cell_area.F	pdomdec.F      mod_wc_dom.F			\
-	domdec.F	genmap.F	bcs_force.F	wqm_inputs.F	\
-	mod_kin.F	mod_hydro.F		tvds.F		\
-	adv_wqm.F	vdif_wqm.F	vertvl.F	viscofh.F	\
-	bcond_wqm.F	fct_nut.F	mod_filenames.F			\
-        test_sed_withDOM.F  							\
+MAIN  = mod_prec.f90	mod_types.f90	mod_utils.f90	mod_control.f90	\
+	mod_lims.f90	mod_bcs.f90	mod_sizes.f90	mod_hydrovars.f90\
+	mod_buffers.f90 	mod_fileinfo.f90	       \
+	mod_wqm.f90	mod_zoop.f90	mod_wqminit.f90    \
+	utilities.f90	mod_par.f90	mod_sed_sav_exchange_vars.f90	\
+	bracket.f90	mod_sed_sf_exchange_vars.f90	mod_sf.f90	\
+	mod_sed_df_exchange_vars.f90	mod_df.f90	    \
+	mod_sed_dom_exchange.f90          mod_sed_dom.f90   mod_owq.f90	 \
+	mod_sav.f90	mod_ba.f90	mod_sed.f90	mod_algal.f90	\
+	mod_bcmap.f90	mod_obcs.f90	mod_ncd.f90	ncdio.f90	\
+	mod_tge.f90	cell_area.f90	pdomdec.f90      mod_wc_dom.f90			\
+	domdec.f90	genmap.f90	bcs_force.f90	wqm_inputs.f90	\
+	mod_kin.f90	mod_hydro.f90		tvds.f90		\
+		vdif_wqm.f90	vertvl.f90	viscofh.f90	\
+	bcond_wqm.f90	fct_nut.f90	mod_filenames.f90			\
+        test_sed_withDOM.f90  							\
 
 
 
@@ -192,10 +189,10 @@ tarfile:
 #--------------------------------------------------------------------------
 
 clean:
-		/bin/rm -f *.o *.mod *.f90
+		/bin/rm -f *.o *.mod  # *.f90
 
 clobber:	clean
-		/bin/rm -f *.f90 *.o wqm
+		/bin/rm -f .o #*.f90  wqm
 
 #--------------------------------------------------------------------------
 #  Common rules for all Makefiles - do not edit.

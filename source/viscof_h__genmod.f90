@@ -1,0 +1,7 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Tue Aug  1 10:58:02 2017
+        MODULE VISCOF_H__genmod
+          INTERFACE 
+            SUBROUTINE VISCOF_H
+            END SUBROUTINE VISCOF_H
+          END INTERFACE 
+        END MODULE VISCOF_H__genmod

@@ -818,13 +818,13 @@ SAV_CALC = .FALSE.
  NCDOC2(:)  = 1.0 
  NCDOC3(:)  = 1.0 
  
- CDOC11(:)   = 1.0 
- CDOC21(:)   = 1.0 
- CDOC31(:)   = 1.0  
+ CDOC11(:)   = 0.0 
+ CDOC21(:)   = 0.0 
+ CDOC31(:)   = 0.0  
            
- NCDOC11(:)  = 1.0 
- NCDOC21(:)  = 1.0 
- NCDOC31(:)  = 1.0 
+ NCDOC11(:)  = 0.0 
+ NCDOC21(:)  = 0.0 
+ NCDOC31(:)  = 0.0 
            
  CDON1(:)   = 0.25 
  CDON2(:)   = 0.25 
@@ -834,13 +834,13 @@ SAV_CALC = .FALSE.
  NCDON2(:)  = 0.25 
  NCDON3(:)  = 0.25 
  
- CDON11(:)   = 0.25 
- CDON21(:)   = 0.25 
- CDON31(:)   = 0.25 
+ CDON11(:)   = 0. 
+ CDON21(:)   = 0. 
+ CDON31(:)   = 0. 
            
- NCDON11(:)  = 0.25 
- NCDON21(:)  = 0.25 
- NCDON31(:)  = 0.25 
+ NCDON11(:)  = 0. 
+ NCDON21(:)  = 0. 
+ NCDON31(:)  = 0. 
            
  CDOP1(:)   = 0.01 
  CDOP2(:)   = 0.01
@@ -1306,7 +1306,8 @@ END IF
 	JMDOM = MARSH_MASS(I)*MARSH_FRAC(I)*EXRATE  ! we will only loop over the marsh nodes, but will have MDOM be defined globally
 
 !FRACTIONATION OF OUR DOM INTO COLORED AND NON COLORED PARTS
-	JMDOM = JMDOM !* 0.1! B Clark testing marsh functionality in new model	
+	JMDOM = JMDOM * 0.1! B Clark testing marsh functionality in new model	
+
 	JCMDOC(I)  = CDOCFRAC*JMDOM       !flux of cdom and ncdom from the marshes
 	JNCMDOC(I) = NCDOCFRAC*JMDOM
 
@@ -1346,28 +1347,28 @@ END IF
 	
 !====== New Addition, B Clark April 2017, Two layer model diffusion from OLW into layer 1
 	
-	JinCDOC11 = JinCDOC1 + S_SHARE*WC_CDOC1(I,KBM1)  ! plant input (g C m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
-	JinCDOC21 = JinCDOC1 + S_SHARE*WC_CDOC2(I,KBM1)
-	JinCDOC31 = JinCDOC1 + S_SHARE*WC_CDOC3(I,KBM1)	
-	JinNCDOC11 = JinNCDOC1 + S_SHARE*WC_NCDOC1(I,KBM1)  ! plant input (g C m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
-	JinNCDOC21 = JinNCDOC1 + S_SHARE*WC_NCDOC2(I,KBM1)
-	JinNCDOC31 = JinNCDOC1 + S_SHARE*WC_NCDOC3(I,KBM1)		
-
-! Nitrogen
-	JinCDON11 = JinCDON1 + S_SHARE*WC_CDON1(I,KBM1)  ! plant input (g N m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
-	JinCDON21 = JinCDON1 + S_SHARE*WC_CDON2(I,KBM1)
-	JinCDON31 = JinCDON1 + S_SHARE*WC_CDON3(I,KBM1)	
-	JinNCDON11 = JinNCDON1 + S_SHARE*WC_NCDON1(I,KBM1)  ! plant input (g N m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
-	JinNCDON21 = JinNCDON1 + S_SHARE*WC_NCDON2(I,KBM1)
-	JinNCDON31 = JinNCDON1 + S_SHARE*WC_NCDON3(I,KBM1)		
-	
-! Phosphorus
-	JinCDOP11 = JinCDOP1 + S_SHARE*WC_CDOP1(I,KBM1)  ! plant input (g P m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
-	JinCDOP21 = JinCDOP1 + S_SHARE*WC_CDOP2(I,KBM1)
-	JinCDOP31 = JinCDOP1 + S_SHARE*WC_CDOP3(I,KBM1)	
-	JinNCDOP11 = JinNCDOP1 + S_SHARE*WC_NCDOP1(I,KBM1)  ! plant input (g P m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
-	JinNCDOP21 = JinNCDOP1 + S_SHARE*WC_NCDOP2(I,KBM1)
-	JinNCDOP31 = JinNCDOP1 + S_SHARE*WC_NCDOP3(I,KBM1)			
+	JinCDOC11 = S_SHARE*WC_CDOC1(I,KBM1)  + JinCDOC1 ! plant input (g C m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinCDOC21 = S_SHARE*WC_CDOC2(I,KBM1)   + JinCDOC1  
+	JinCDOC31 = S_SHARE*WC_CDOC3(I,KBM1) +	JinCDOC1  
+	JinNCDOC11 = S_SHARE*WC_NCDOC1(I,KBM1) + JinNCDOC1  ! plant input (g C m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinNCDOC21 = S_SHARE*WC_NCDOC2(I,KBM1) + JinNCDOC1 
+	JinNCDOC31 = S_SHARE*WC_NCDOC3(I,KBM1)	+ JinNCDOC1 	
+                                                           
+! Nitrogen                                                 
+	JinCDON11 = S_SHARE*WC_CDON1(I,KBM1)  + JinCDON1 ! plant input (g N m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinCDON21 = S_SHARE*WC_CDON2(I,KBM1)   + JinCDON1  
+	JinCDON31 = S_SHARE*WC_CDON3(I,KBM1)	+ JinCDON1  
+	JinNCDON11 = S_SHARE*WC_NCDON1(I,KBM1) + JinNCDON1  ! plant input (g N m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinNCDON21 = S_SHARE*WC_NCDON2(I,KBM1) + JinNCDON1 
+	JinNCDON31 = S_SHARE*WC_NCDON3(I,KBM1)	+ JinNCDON1 	
+	                                                   
+! Phosphorus                                               
+	JinCDOP11 = S_SHARE*WC_CDOP1(I,KBM1)  + JinCDOP1 ! plant input (g P m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinCDOP21 = S_SHARE*WC_CDOP2(I,KBM1)    + JinCDOP1  
+	JinCDOP31 = S_SHARE*WC_CDOP3(I,KBM1)	+ JinCDOP1  
+	JinNCDOP11 = S_SHARE*WC_NCDOP1(I,KBM1) + JinNCDOP1  ! plant input (g P m^-3 d^-1) + Diffusive flux (g m^-3 d^-1) using S = SOD/O20 from mod_sed
+	JinNCDOP21 = S_SHARE*WC_NCDOP2(I,KBM1) + JinNCDOP1 
+	JinNCDOP31 = S_SHARE*WC_NCDOP3(I,KBM1)	+ JinNCDOP1 		
 
 !Get the temperature adjusted decay rate from GET_ZHTA function
 !CARBON	
@@ -1493,8 +1494,14 @@ END IF
 		   
  CALL DDOM_SOLVER(CDOC21(I),CDOC2(I),CDOC21TM1, CDOC2TM1,ALPHA1, ALPHA2, DD, DT, JinCDOC21, JinCDOC2)
 
+
 	 JWCDOC2(I) = -S_SHARE*(WC_CDOC2(I,KBM1) - CDOC21(I))
- 
+
+!if(NGID(I) == 5856) THEN
+
+!write(*,*) 'JWCDOC2 in mod_sed_dom = ',JWCDOC2(I) 
+
+!endif
 	   ALPHA1 = -( XKDOC3 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOC3 + W2_Z + DD_Z + temp_absC)
 		   
@@ -1641,6 +1648,14 @@ END IF
 !!	write(*,*) 'JDOM_Out = ',JDOM_OUT(I,1)
 !	
 !#else	
+
+
+!if(NGID(I) == 5856) THEN
+
+!write(*,*) 'JWCDOC2 in mod_sed_dom #2 = ',JWCDOC2(I) 
+
+!endif
+
 	
 	JDOM_OUT(I,1)= JWCDOC1(I) !* DLTS * ART1   !get the instantaneous flux accross the interface for output
 	JDOM_OUT(I,2)= JWCDOC2(I)! * DLTS * ART1 	 
@@ -1707,6 +1722,9 @@ END IF
 	JDIAGDON3 = XKDON3 * (CDON31TM1 + NCDON31TM1)   !pass to G3 nitrogen diagenesis
 
 	JDONX_OUT1(I)=JDIAGDON1+JDIAGDON2+JDIAGDON3 ! this goes to mod_sed (g N/m^2/day)
+        IF (JDONX_OUT1(I) < 0.0) THEN
+                write(*,*)'JDONX_OUT1(I) = ',JDONX_OUT1(I)
+        ENDIF
 ! Carbon remineralization
 	JDIAGDOC1 = XKDOC1 * (CDOC11TM1 + NCDOC11TM1)  !pass to G1 carbon diagenesis
 	JDIAGDOC2 = XKDOC2 * (CDOC21TM1 + NCDOC21TM1)  !pass to G2 carbon diagenesis
@@ -1737,6 +1755,9 @@ END IF
 
 	JDONX_OUT2(I)=JDIAGDON1+JDIAGDON2+JDIAGDON3 ! this goes to mod_sed (g N/m^2/day)	
 
+        IF (JDONX_OUT2(I) < 0.0) THEN
+                write(*,*)'JDONX_OUT2(I) = ',JDONX_OUT2(I)
+        ENDIF
 !PHOSPHORUS
 
 	JDIAGDOP1 = XKDOP1 * (CDOP1TM1 + NCDOP1TM1) * ZSED(I)  !pass to G1 phosphorus diagenesis

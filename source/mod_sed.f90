@@ -3158,33 +3158,33 @@ SUBROUTINE SED_INIT2
 !   IDEBUG=1
 !   IF(MSR)WRITE(*,*)'DEBUG=',IDEBUG
    
-      DO I=1,MLOC
-	  
-!	  write(*,*)'Depth = ',H(I)
-	  ! B Clark added below to get a spatially varying resuspension 
-	    IF(H(I) > 5.)THEN
-		
-          WSSNET(I) = WSSBNET(I)
-          WSLNET(I) = WSLBNET(I)
-          WSRNET(I) = WSRBNET(I)
-          WS1NET(I) = WS1BNET(I)
-          WS2NET(I) = WS2BNET(I)
-          WS3NET(I) = WS3BNET(I)
-          WSUNET(I) = WSUBNET(I)
-		  
-		ELSE
-		
-		  WSSNET(I) = 0.1
-		  WSLNET(I) = 0.1
-		  WSRNET(I) = 0.1
-		  WS1NET(I) = 0.1
-		  WS2NET(I) = 0.1
-		  WS3NET(I) = 0.1
-		  WSUNET(I) = 0.1
-		  
-		ENDIF
-		  
-      ENDDO
+!      DO I=1,MLOC
+!	  
+!!	  write(*,*)'Depth = ',H(I)
+!	  ! B Clark added below to get a spatially varying resuspension 
+!	    IF(H(I) > 5.)THEN
+!		
+!          WSSNET(I) = WSSBNET(I)
+!          WSLNET(I) = WSLBNET(I)
+!          WSRNET(I) = WSRBNET(I)
+!          WS1NET(I) = WS1BNET(I)
+!          WS2NET(I) = WS2BNET(I)
+!          WS3NET(I) = WS3BNET(I)
+!          WSUNET(I) = WSUBNET(I)
+!		  
+!		ELSE
+!		
+!		  WSSNET(I) = 0.1
+!		  WSLNET(I) = 0.1
+!		  WSRNET(I) = 0.1
+!		  WS1NET(I) = 0.1
+!		  WS2NET(I) = 0.1
+!		  WS3NET(I) = 0.1
+!		  WSUNET(I) = 0.1
+!		  
+!		ENDIF
+!		  
+!      ENDDO
 
 !******* Adjust net settling for SAV effect
 
@@ -4306,6 +4306,7 @@ END IF
 			! B Clark we take the loss term that is being passed to diagenesis calculations, XKPOC1* POC1 and transfer to colored/non-colored portions of DOC in mod_sed_doc.F
             POC1 = (JPOC(I,1)*DLTS_H2+POC1TM1)                       & 
                     /(1.+(XKPOC1+W2)*DLTS_H2)
+					
             POC2 = (JPOC(I,2)*DLTS_H2+POC2TM1)                       &
                     /(1.+(XKPOC2+W2)*DLTS_H2)
                     
@@ -4523,8 +4524,7 @@ IF(HYDRO_FLAG .AND. SED_DOM) THEN
 	! Layer 1 input of DON remineralization to Layer 1 NH4 					  
      JNX_LAYER1 =  JDONX_SHARE1(I)*HSED1(I)*1000  ! g N m^-3 d * depth of layer 1 (m) * 1000 mg g^-1
 		
-!	 write(*,*)'JCX before layer 1',JCX									 
-										 ! ----> mg N m^-2 d^-1     
+!	 write(*,*)'JCX before layer 1',JCX									 										 ! ----> mg N m^-2 d^-1     
 	  JCX = JCX+JDOCX_SHARE1(I)*HSED1(I)*1000  !JCX only goes to SOD
 	    JPX_LAYER1 =  JDOPX_SHARE1(I)*HSED1(I)*1000  ! g P m^-3 d * depth of layer 1 (m) * 1000 mg g^-1
 									  
@@ -7197,7 +7197,7 @@ ENDIF
 
         !read in a new record, if end of file, jump to 134 and open next file
         
-        READ (WCL,1010,END=134) NXWCL,        &!jday of next record
+        READ (WCL,*,END=134) NXWCL,        &!jday of next record
                                 JCIN_R2,    &!C OM flux
                                 JNIN_R2,    &!N OM flux
                                 JPIN_R2,    &!P OM flux
@@ -7260,7 +7260,7 @@ D_R2 = 1.0
       OPEN (WCL,FILE=WCLFN(WCLPTR),STATUS='OLD')
       
         READ (WCL,1000)         !Read past the header lines
-        READ (WCL,1010,END=134) NXWCL,        &!jday of next record
+        READ (WCL,*,END=134) NXWCL,        &!jday of next record
                                 JCIN_R2,    &!C OM flux
                                 JNIN_R2,    &!N OM flux
                                 JPIN_R2,    &!P OM flux

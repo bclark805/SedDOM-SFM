@@ -1,0 +1,7 @@
+        !COMPILER-GENERATED INTERFACE MODULE: Tue Aug  1 10:57:57 2017
+        MODULE GENMAP__genmod
+          INTERFACE 
+            SUBROUTINE GENMAP
+            END SUBROUTINE GENMAP
+          END INTERFACE 
+        END MODULE GENMAP__genmod
