@@ -23,6 +23,10 @@ to build the executable file type
 
 make
 
+then 
+make
+again after the first build stops
+
 2.  Specify the file you want to run for the overlying water column chemical constituents in sedtest_2c.inp
 
 	PNPT ---> Point No Point
