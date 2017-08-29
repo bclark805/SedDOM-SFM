@@ -1482,14 +1482,14 @@ END IF
 	  !S_SHARE = DD_Z
 
 !COlORED CARBON	  
-	   ALPHA1 = -(XKDOC1 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDOC1  + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOC1 + W2_Z + DD_Z + temp_absC)
 
  CALL DDOM_SOLVER(CDOC11(I),CDOC1(I),CDOC11TM1, CDOC1TM1,ALPHA1, ALPHA2, DD, DT, JinCDOC11, JinCDOC1)
  
 	 JWCDOC1(I) = -S_SHARE*(WC_CDOC1(I,KBM1) - CDOC11(I))
 
-	   ALPHA1 = -( XKDOC2 +W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -( XKDOC2  + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOC2 + W2_Z + DD_Z + temp_absC)
 		   
  CALL DDOM_SOLVER(CDOC21(I),CDOC2(I),CDOC21TM1, CDOC2TM1,ALPHA1, ALPHA2, DD, DT, JinCDOC21, JinCDOC2)
@@ -1502,7 +1502,7 @@ END IF
 !write(*,*) 'JWCDOC2 in mod_sed_dom = ',JWCDOC2(I) 
 
 !endif
-	   ALPHA1 = -( XKDOC3 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -( XKDOC3 + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOC3 + W2_Z + DD_Z + temp_absC)
 		   
  CALL DDOM_SOLVER(CDOC31(I),CDOC3(I),CDOC31TM1, CDOC3TM1,ALPHA1, ALPHA2, DD,DT, JinCDOC31, JinCDOC3)
@@ -1510,21 +1510,21 @@ END IF
 	 JWCDOC3(I) = -S_SHARE*(WC_CDOC3(I,KBM1) - CDOC31(I))
 
 !Non-COlORED CARBON	  
-	   ALPHA1 = -( XKDOC1 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -( XKDOC1 + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOC1 + W2_Z + DD_Z + temp_absC)
 	
  CALL DDOM_SOLVER(NCDOC11(I),NCDOC1(I),NCDOC11TM1, NCDOC1TM1,ALPHA1, ALPHA2,DD, DT, JinNCDOC11, JinNCDOC1)
 
 	 JWNCDOC1(I) = -S_SHARE*(WC_NCDOC1(I,KBM1) - NCDOC11(I))
 
-	   ALPHA1 = -(XKDOC2 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDOC2  + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOC2 + W2_Z + DD_Z + temp_absC)
 		   
  CALL DDOM_SOLVER(NCDOC21(I),NCDOC2(I),NCDOC21TM1, NCDOC2TM1,ALPHA1, ALPHA2, DD,DT, JinNCDOC21, JinNCDOC2)
 	 
 	 JWNCDOC2(I) = -S_SHARE*(WC_NCDOC2(I,KBM1) - NCDOC21(I))
 
-	   ALPHA1 = -(XKDOC3 + W2_Z + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDOC3  + S_SHARE + temp_absC)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOC3 + W2_Z + DD_Z + temp_absC)
 		   
  CALL DDOM_SOLVER(NCDOC31(I),NCDOC3(I),NCDOC31TM1, NCDOC3TM1,ALPHA1, ALPHA2, DD,DT, JinNCDOC31, JinNCDOC3)
@@ -1532,21 +1532,21 @@ END IF
 	 JWNCDOC3(I) = -S_SHARE*(WC_NCDOC3(I,KBM1) - NCDOC31(I))
 
 !COlORED Nitrogen	  
-	   ALPHA1 = -(XKDON1 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDON1  + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDON1 + W2_Z + DD_Z + temp_absN)
 
  CALL DDOM_SOLVER(CDON11(I),CDON1(I),CDON11TM1,CDON1TM1,ALPHA1, ALPHA2, DD, DT, JinCDON11, JinCDON1)
 
 	 JWCDON1(I) = -S_SHARE*(WC_CDON1(I,KBM1) - CDON11(I))
 	  
-	   ALPHA1 = -(XKDON2 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDON2  + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDON2 + W2_Z + DD_Z + temp_absN)
 		   
  CALL DDOM_SOLVER(CDON21(I),CDON2(I),CDON21TM1, CDON2TM1,ALPHA1, ALPHA2, DD, DT, JinCDON21, JinCDON2)
 	 
 	 JWCDON2(I) = -S_SHARE*(WC_CDON2(I,KBM1) - CDON21(I))
 
-	   ALPHA1 = -(XKDON3 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDON3  + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDON3 + W2_Z + DD_Z + temp_absN)
 		   
  CALL DDOM_SOLVER(CDON31(I),CDON3(I),CDON31TM1, CDON3TM1,ALPHA1, ALPHA2, DD,DT, JinCDON31, JinCDON3)
@@ -1554,21 +1554,21 @@ END IF
 	 JWCDON3(I) = -S_SHARE*(WC_CDON3(I,KBM1) - CDON31(I))
 
 !Non-COlORED Nitrogen	  
-	   ALPHA1 = -(XKDON1 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDON1 + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDON1 + W2_Z + DD_Z + temp_absN)
 	
  CALL DDOM_SOLVER(NCDON11(I),NCDON1(I),NCDON11TM1, NCDON1TM1,ALPHA1, ALPHA2,DD, DT, JinNCDON11, JinNCDON1)
 
 	 JWNCDON1(I) = -S_SHARE*(WC_NCDON1(I,KBM1) - NCDON11(I))
 	 
-	   ALPHA1 = -(XKDON2 + W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDON2 + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDON2 + W2_Z + DD_Z + temp_absN)
 		   
  CALL DDOM_SOLVER(NCDON21(I),NCDON2(I),NCDON21TM1, NCDON2TM1,ALPHA1, ALPHA2, DD,DT, JinNCDON21, JinNCDON2)
 	 
 	 JWNCDON2(I) = -S_SHARE*(WC_NCDON2(I,KBM1) - NCDON21(I))
 	 
-	   ALPHA1 = -(XKDON3 +W2_Z + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDON3  + S_SHARE + temp_absN)  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDON3 + W2_Z + DD_Z + temp_absN)
 		   
  CALL DDOM_SOLVER(NCDON31(I),NCDON3(I),NCDON31TM1, NCDON3TM1,ALPHA1, ALPHA2, DD,DT, JinNCDON31, JinNCDON3)
@@ -1577,21 +1577,21 @@ END IF
 	  	 
 !!COlORED Phosphorous
 !	 
-	   ALPHA1 = -(XKDOP1 + W2_Z + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDOP1  + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOP1 + W2_Z + DD_Z )
 
  CALL DDOM_SOLVER(CDOP11(I),CDOP1(I),CDOP11TM1,CDOP1TM1,ALPHA1, ALPHA2, DD, DT, JinCDOP11, JinCDOP1)
 
 	 JWCDOP1(I) = -S_SHARE*(WC_CDOP1(I,KBM1) - CDOP11(I))
 	  
-	   ALPHA1 = -(XKDOP2 + W2_Z + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDOP2  + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOP2 + W2_Z + DD_Z )	
 	   
  CALL DDOM_SOLVER(CDOP21(I),CDOP2(I),CDOP21TM1, CDOP2TM1,ALPHA1, ALPHA2, DD, DT, JinCDOP21, JinCDOP2)
 	 
 	 JWCDOP2(I) = -S_SHARE*(WC_CDOP2(I,KBM1) - CDOP21(I))
 
-	   ALPHA1 = -(XKDOP3 + W2_Z + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDOP3  + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOP3 + W2_Z + DD_Z )	
 	   
  CALL DDOM_SOLVER(CDOP31(I),CDOP3(I),CDOP31TM1, CDOP3TM1,ALPHA1, ALPHA2, DD,DT, JinCDOP31, JinCDOP3)
@@ -1599,21 +1599,21 @@ END IF
 	 JWCDOP3(I) = -S_SHARE*(WC_CDOP3(I,KBM1) - CDOP31(I))
 
 !Non-COlORED Phosphorous	  
-	   ALPHA1 = -(XKDOP1 + W2_Z + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDOP1  + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOP1 + W2_Z + DD_Z )
 	
  CALL DDOM_SOLVER(NCDOP11(I),NCDOP1(I),NCDOP11TM1, NCDOP1TM1,ALPHA1, ALPHA2,DD, DT, JinNCDOP11, JinNCDOP1)
 
 	 JWNCDOP1(I) = -S_SHARE*(WC_NCDOP1(I,KBM1) - NCDOP11(I))
 	 
-	   ALPHA1 = -(XKDOP2 + W2_Z + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDOP2  + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOP2 + W2_Z + DD_Z )
 		   
  CALL DDOM_SOLVER(NCDOP21(I),NCDOP2(I),NCDOP21TM1, NCDOP2TM1,ALPHA1, ALPHA2, DD,DT, JinNCDOP21, JinNCDOP2)
 	 
 	 JWNCDOP2(I) = -S_SHARE*(WC_NCDOP2(I,KBM1) - NCDOP21(I))
 	 
-	   ALPHA1 = -(XKDOP3 +W2_Z + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
+	   ALPHA1 = -(XKDOP3  + S_SHARE )  ! these are all the coefficients for C1(t+dt) units = 1/day, make negative because they are loss terms	
 	   ALPHA2 = -(XKDOP3 + W2_Z + DD_Z )
 	
  CALL DDOM_SOLVER(NCDOP31(I),NCDOP3(I),NCDOP31TM1, NCDOP3TM1,ALPHA1, ALPHA2, DD,DT, JinNCDOP31, JinNCDOP3)
